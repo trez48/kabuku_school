@@ -106,10 +106,12 @@ def dashboard(request):
         # ── Filter params ─────────────────────────────────────────────────────
         current_year = timezone.now().year
         available_years = sorted(
-            Mark.objects.values_list('year', flat=True).distinct(),
+            set(Mark.objects.values_list('year', flat=True)),
             reverse=True
         ) or [current_year]
-        available_terms = Mark.objects.values_list('term', flat=True).distinct().order_by('term')
+        available_terms = sorted(
+            set(Mark.objects.values_list('term', flat=True))
+        )
 
         sel_year = request.GET.get('year', '')
         sel_term = request.GET.get('term', '')
