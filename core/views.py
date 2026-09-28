@@ -8,9 +8,16 @@ from academics.models import Event
 
 
 def home(request):
-    sliders = SliderImage.objects.filter(active=True)
-    latest_news = NewsPost.objects.filter(published=True)[:3]
-    upcoming_events = Event.objects.order_by('date')[:5]
+    from django.db import connection, OperationalError as DjOperationalError
+    try:
+        sliders = list(SliderImage.objects.filter(active=True))
+        latest_news = list(NewsPost.objects.filter(published=True)[:3])
+        upcoming_events = list(Event.objects.order_by('date')[:5])
+    except DjOperationalError:
+        # Database not yet migrated (e.g. fresh Railway deploy)
+        sliders = []
+        latest_news = []
+        upcoming_events = []
     # Student photos slideshow
     photos_dir = settings.STUDENT_PHOTOS_DIR
     student_photos = []
