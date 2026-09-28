@@ -188,12 +188,12 @@ class Command(BaseCommand):
 
         self.stdout.write('  Created news posts')
 
-        # ── Staff ─────────────────────────────────────────────────────────
+        # ── Staff (core model for display) ───────────────────────────────
         staff_data = [
-            ('Mr. Joseph Mrema',    'headmaster',  'Mathematics', 15),
-            ('Ms. Fatuma Moshi',    'teacher',     'Physics',     8),
-            ('Mr. Emmanuel Kileo',  'teacher',     'Chemistry',   6),
-            ('Ms. Grace Shayo',     'teacher',     'Geography',   5),
+            ('Mr. Joseph Mrema',   'headmaster', 'Mathematics', 15),
+            ('Ms. Fatuma Moshi',   'teacher',    'Physics',      8),
+            ('Mr. Emmanuel Kileo', 'teacher',    'Chemistry',    6),
+            ('Ms. Grace Shayo',    'teacher',    'Geography',    5),
         ]
         for name, role, subject, exp in staff_data:
             Staff.objects.get_or_create(
@@ -201,11 +201,67 @@ class Command(BaseCommand):
                 defaults={'role': role, 'subject': subject,
                           'experience': exp, 'qualification': 'B.Ed'}
             )
+        self.stdout.write('  Created staff profiles')
 
-        self.stdout.write('  Created staff')
+        # ── Teacher login accounts ────────────────────────────────────────
+        teacher_accounts = [
+            ('teacher1', 'Fatuma',   'Moshi',  'teacher1@kabuku.ac.tz', cls_pgm),
+            ('teacher2', 'Emmanuel', 'Kileo',  'teacher2@kabuku.ac.tz', cls_pcm),
+        ]
+        for username, first, last, email, classroom in teacher_accounts:
+            user, created = User.objects.get_or_create(
+                username=username,
+                defaults={'first_name': first, 'last_name': last, 'email': email}
+            )
+            if created:
+                user.set_password('Teacher@2026')
+                user.save()
+            UserProfile.objects.get_or_create(
+                user=user,
+                defaults={'role': 'teacher', 'must_change_password': False}
+            )
+        self.stdout.write('  Created 2 teacher accounts')
+
+        # ── Parent login accounts ─────────────────────────────────────────
+        parent_child_map = [
+            ('parent1', 'Agnes',   'Mwenda', 'parent1@gmail.com', 'john'),
+            ('parent2', 'Charles', 'Kimaro', 'parent2@gmail.com', 'grace'),
+            ('parent3', 'Helena',  'Lema',   'parent3@gmail.com', 'anna'),
+        ]
+        for p_username, first, last, email, child_username in parent_child_map:
+            child_user = User.objects.filter(username=child_username).first()
+            if not child_user:
+                continue
+            child_profile = UserProfile.objects.filter(user=child_user).first()
+            if not child_profile:
+                continue
+            p_user, created = User.objects.get_or_create(
+                username=p_username,
+                defaults={'first_name': first, 'last_name': last, 'email': email}
+            )
+            if created:
+                p_user.set_password('Parent@2026')
+                p_user.save()
+            UserProfile.objects.get_or_create(
+                user=p_user,
+                defaults={
+                    'role': 'parent',
+                    'parent_of': child_profile,
+                    'must_change_password': False,
+                }
+            )
+        self.stdout.write('  Created 3 parent accounts')
 
         self.stdout.write(self.style.SUCCESS(
-            '\n✅ Demo data seeded successfully!\n'
-            '   Students: 8 (username = john/grace/peter/anna/david/mary/james/lucy)\n'
-            '   Password for all students: Student@2026\n'
+            '\n✅ Demo data seeded successfully!\n\n'
+            '   STUDENTS (8)\n'
+            '   Usernames: john, grace, peter, anna, david, mary, james, lucy\n'
+            '   Password:  Student@2026\n\n'
+            '   TEACHERS (2)\n'
+            '   Usernames: teacher1, teacher2\n'
+            '   Password:  Teacher@2026\n\n'
+            '   PARENTS (3)\n'
+            '   Usernames: parent1 (child=john), parent2 (child=grace), parent3 (child=anna)\n'
+            '   Password:  Parent@2026\n\n'
+            '   ADMIN: create with python manage.py createsuperuser\n'
         ))
