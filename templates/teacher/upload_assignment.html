@@ -1,0 +1,47 @@
+{% extends 'teacher/base.html' %}
+{% block title %}Upload Assignment{% endblock %}
+{% block page_title %}Upload Assignment{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body p-4">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Title</label>
+                    <input type="text" name="title" class="form-control" required>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Subject</label>
+                    <select name="subject" class="form-select" required>
+                        {% for s in subjects %}<option value="{{ s.pk }}">{{ s.name }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Class</label>
+                    <select name="classroom" class="form-select" required>
+                        {% for c in classes %}<option value="{{ c.pk }}">{{ c.name }}</option>{% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea name="description" class="form-control" rows="3"></textarea>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">File (PDF, DOCX)</label>
+                    <input type="file" name="file" class="form-control">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Deadline</label>
+                    <input type="datetime-local" name="deadline" class="form-control">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-orange"><i class="fas fa-upload me-2"></i>Upload</button>
+            <a href="{% url 'teacher_assignments' %}" class="btn btn-outline-dark ms-2">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

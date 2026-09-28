@@ -1,0 +1,269 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Home - Kabuku Secondary School{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section" id="hero">
+    <!-- Background photo slides -->
+    {% if student_photos %}
+    <div class="hero-bg-slider">
+        {% for photo in student_photos %}
+        <div class="hero-bg-slide {% if forloop.first %}active{% endif %}" style="background-image: url('{{ photo }}');"></div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <!-- Dark overlay -->
+    <div class="hero-dark-overlay"></div>
+
+    <!-- Content -->
+    <div class="hero-overlay">
+        <div class="container text-center text-white">
+            <h1 class="display-4 fw-bold" data-aos="fade-down">KABUKU SECONDARY SCHOOL</h1>
+            <p class="lead mt-3" data-aos="fade-up" data-aos-delay="200">"Education for Development"</p>
+            <p class="fs-5 mt-2" data-aos="fade-up" data-aos-delay="300">
+                <span class="badge bg-white text-dark px-3 py-2 me-2">A-Level</span>
+                <span class="badge bg-white text-dark px-3 py-2 me-2">PGM</span>
+                <span class="badge bg-white text-dark px-3 py-2">PCM</span>
+            </p>
+            <div class="mt-4" data-aos="fade-up" data-aos-delay="400">
+                <a href="{% url 'admissions' %}" class="btn btn-orange btn-lg me-2">
+                    <i class="fas fa-paper-plane me-2"></i>Apply Now
+                </a>
+                <a href="{% url 'about' %}" class="btn btn-outline-light btn-lg">
+                    Learn More
+                </a>
+            </div>
+            <!-- Slide indicators -->
+            {% if student_photos %}
+            <div class="hero-dots mt-5" data-aos="fade-up" data-aos-delay="500">
+                {% for photo in student_photos %}
+                <span class="hero-dot {% if forloop.first %}active{% endif %}" data-index="{{ forloop.counter0 }}"></span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+
+{% if student_photos %}
+<script>
+(function () {
+    const slides = document.querySelectorAll('.hero-bg-slide');
+    const dots = document.querySelectorAll('.hero-dot');
+    let current = 0;
+
+    function goTo(n) {
+        slides[current].classList.remove('active');
+        dots[current].classList.remove('active');
+        current = (n + slides.length) % slides.length;
+        slides[current].classList.add('active');
+        dots[current].classList.add('active');
+    }
+
+    // Auto-advance every 5 seconds
+    let timer = setInterval(() => goTo(current + 1), 5000);
+
+    // Dot click navigation
+    dots.forEach((dot, i) => {
+        dot.addEventListener('click', () => {
+            clearInterval(timer);
+            goTo(i);
+            timer = setInterval(() => goTo(current + 1), 5000);
+        });
+    });
+})();
+</script>
+{% endif %}
+
+<!-- Welcome Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-7" data-aos="fade-right">
+                <h2 class="section-title">Welcome to Kabuku Secondary School</h2>
+                <p class="lead text-muted">A centre of academic excellence located in Kabuku, Handeni - Tanga, Tanzania.</p>
+                <p>Under the leadership of Headmaster <strong>Mwezi Mchanga</strong>, our school is committed to providing quality Advanced Level education that prepares students for higher learning and national development.</p>
+                <p>With over <strong>2,000 students</strong>, we offer a vibrant learning environment focused on science and mathematics through our PGM and PCM combinations.</p>
+                <div class="mt-4">
+                    <a href="{% url 'about' %}" class="btn btn-outline-dark me-2">
+                        <i class="fas fa-info-circle me-1"></i> About Us
+                    </a>
+                    <a href="{% url 'contact' %}" class="btn btn-outline-dark">
+                        <i class="fas fa-phone me-1"></i> Contact
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-5 mt-4 mt-lg-0" data-aos="fade-left">
+                <div class="stats-box">
+                    <div class="row text-center">
+                        <div class="col-6 mb-4">
+                            <h3 class="text-orange fw-bold">2000+</h3>
+                            <p class="text-muted mb-0">Students</p>
+                        </div>
+                        <div class="col-6 mb-4">
+                            <h3 class="text-orange fw-bold">2</h3>
+                            <p class="text-muted mb-0">Combinations</p>
+                        </div>
+                        <div class="col-6">
+                            <h3 class="text-orange fw-bold">A-Level</h3>
+                            <p class="text-muted mb-0">Education</p>
+                        </div>
+                        <div class="col-6">
+                            <h3 class="text-orange fw-bold">GePG</h3>
+                            <p class="text-muted mb-0">Payment</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Programs Section -->
+<section class="py-5" style="background: var(--gray-bg);">
+    <div class="container">
+        <h2 class="section-title text-center" data-aos="fade-up">Our Combinations</h2>
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-5 mb-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="card program-card h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-3" style="width:70px;height:70px;background:var(--light-orange);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;">
+                            <i class="fas fa-globe-africa fa-2x text-orange"></i>
+                        </div>
+                        <h4 class="fw-bold">PGM</h4>
+                        <p class="text-orange fw-500">Physics, Geography, Mathematics</p>
+                        <p class="text-muted">A combination that bridges physical sciences with spatial understanding, preparing students for environmental engineering and geosciences.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-5 mb-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="card program-card h-100">
+                    <div class="card-body text-center p-4">
+                        <div class="mb-3" style="width:70px;height:70px;background:var(--light-orange);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;">
+                            <i class="fas fa-atom fa-2x text-orange"></i>
+                        </div>
+                        <h4 class="fw-bold">PCM</h4>
+                        <p class="text-orange fw-500">Physics, Chemistry, Mathematics</p>
+                        <p class="text-muted">The core science combination for engineering, medicine, technology, and applied sciences career pathways.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Why Choose Us -->
+<section class="py-5">
+    <div class="container">
+        <h2 class="section-title text-center" data-aos="fade-up">Why Choose Kabuku?</h2>
+        <div class="row mt-4">
+            <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="100">
+                <div class="text-center">
+                    <div class="mb-3" style="width:60px;height:60px;background:var(--light-orange);border-radius:12px;display:inline-flex;align-items:center;justify-content:center;">
+                        <i class="fas fa-graduation-cap fa-xl text-orange"></i>
+                    </div>
+                    <h6 class="fw-bold">Quality Education</h6>
+                    <p class="text-muted small">Dedicated teachers committed to academic excellence</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="200">
+                <div class="text-center">
+                    <div class="mb-3" style="width:60px;height:60px;background:var(--light-orange);border-radius:12px;display:inline-flex;align-items:center;justify-content:center;">
+                        <i class="fas fa-flask fa-xl text-orange"></i>
+                    </div>
+                    <h6 class="fw-bold">Science Focus</h6>
+                    <p class="text-muted small">Strong emphasis on science and mathematics</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="300">
+                <div class="text-center">
+                    <div class="mb-3" style="width:60px;height:60px;background:var(--light-orange);border-radius:12px;display:inline-flex;align-items:center;justify-content:center;">
+                        <i class="fas fa-users fa-xl text-orange"></i>
+                    </div>
+                    <h6 class="fw-bold">Large Community</h6>
+                    <p class="text-muted small">Over 2,000 students in a supportive environment</p>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4" data-aos="fade-up" data-aos-delay="400">
+                <div class="text-center">
+                    <div class="mb-3" style="width:60px;height:60px;background:var(--light-orange);border-radius:12px;display:inline-flex;align-items:center;justify-content:center;">
+                        <i class="fas fa-laptop fa-xl text-orange"></i>
+                    </div>
+                    <h6 class="fw-bold">Digital Portal</h6>
+                    <p class="text-muted small">Online results, applications & GePG payments</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Latest News -->
+{% if latest_news %}
+<section class="py-5" style="background: var(--gray-bg);">
+    <div class="container">
+        <h2 class="section-title text-center" data-aos="fade-up">Latest News</h2>
+        <div class="row mt-4">
+            {% for post in latest_news %}
+            <div class="col-md-4 mb-4" data-aos="fade-up" data-aos-delay="{{ forloop.counter0|add:1 }}00">
+                <div class="card h-100">
+                    {% if post.image %}
+                    <img src="{{ post.image.url }}" class="card-img-top" alt="{{ post.title }}">
+                    {% else %}
+                    <div class="card-img-top d-flex align-items-center justify-content-center" style="height:200px;background:var(--light-orange);">
+                        <i class="fas fa-newspaper fa-3x text-orange"></i>
+                    </div>
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title fw-bold">{{ post.title }}</h5>
+                        <p class="card-text text-muted">{{ post.content|truncatewords:20 }}</p>
+                    </div>
+                    <div class="card-footer bg-white border-0">
+                        <small class="text-muted"><i class="fas fa-calendar me-1"></i>{{ post.created_at|date:"M d, Y" }}</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-3">
+            <a href="{% url 'news' %}" class="btn btn-outline-dark">View All News <i class="fas fa-arrow-right ms-1"></i></a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Events -->
+{% if upcoming_events %}
+<section class="py-5">
+    <div class="container">
+        <h2 class="section-title text-center" data-aos="fade-up">Upcoming Events</h2>
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-8">
+                {% for event in upcoming_events %}
+                <div class="event-item d-flex align-items-center mb-3 p-3 bg-white rounded-3 shadow-sm" data-aos="fade-up" data-aos-delay="{{ forloop.counter0 }}50">
+                    <div class="event-date-box text-center me-4">
+                        <span class="d-block fs-2 fw-bold text-orange">{{ event.date|date:"d" }}</span>
+                        <span class="text-muted small">{{ event.date|date:"M Y" }}</span>
+                    </div>
+                    <div>
+                        <h5 class="mb-1 fw-bold">{{ event.title }}</h5>
+                        {% if event.location %}<p class="mb-0 text-muted small"><i class="fas fa-map-marker-alt me-1"></i>{{ event.location }}</p>{% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- CTA Section -->
+<section class="py-5" style="background: linear-gradient(135deg, #1B2A4A 0%, #243B5F 100%);">
+    <div class="container text-center text-white" data-aos="fade-up">
+        <h2 class="fw-bold mb-3">Ready to Join Kabuku Secondary School?</h2>
+        <p class="mb-4 opacity-75">Apply online today and start your journey towards academic excellence.</p>
+        <a href="{% url 'admissions' %}" class="btn btn-orange btn-lg"><i class="fas fa-paper-plane me-2"></i>Apply Now</a>
+    </div>
+</section>
+{% endblock %}

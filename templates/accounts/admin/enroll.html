@@ -1,0 +1,54 @@
+{% extends 'accounts/admin_base.html' %}
+{% block title %}Enroll Students{% endblock %}
+{% block page_title %}Enroll Students to Classes{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header">Enroll a Student</div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label">Student</label>
+                        <select name="student" class="form-select" required>
+                            <option value="">Select Student</option>
+                            {% for s in students %}<option value="{{ s.pk }}">{{ s.get_full_name }} ({{ s.username }})</option>{% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Class</label>
+                        <select name="classroom" class="form-select" required>
+                            <option value="">Select Class</option>
+                            {% for c in classes %}<option value="{{ c.pk }}">{{ c.name }} ({{ c.combination.code }})</option>{% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-orange w-100">Enroll</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-header">Recent Enrollments</div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead><tr><th>Student</th><th>Class</th><th>Combination</th></tr></thead>
+                    <tbody>
+                        {% for e in enrollments %}
+                        <tr>
+                            <td>{{ e.student.get_full_name }}</td>
+                            <td>{{ e.classroom.name }}</td>
+                            <td><span class="badge bg-dark">{{ e.classroom.combination.code }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="3" class="text-center text-muted">No enrollments yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

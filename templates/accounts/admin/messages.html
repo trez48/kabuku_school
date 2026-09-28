@@ -1,0 +1,34 @@
+{% extends 'accounts/admin_base.html' %}
+{% block title %}Messages{% endblock %}
+{% block page_title %}Contact Messages{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr><th>From</th><th>Email</th><th>Subject</th><th>Date</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for msg in contact_messages %}
+                <tr class="{% if not msg.read %}table-warning{% endif %}">
+                    <td>{{ msg.name }}</td>
+                    <td>{{ msg.email }}</td>
+                    <td>{{ msg.subject }}</td>
+                    <td>{{ msg.created_at|date:"M d, Y" }}</td>
+                    <td>{% if msg.read %}<span class="badge bg-secondary">Read</span>{% else %}<span class="badge bg-warning">New</span>{% endif %}</td>
+                    <td>
+                        {% if not msg.read %}
+                        <a href="{% url 'admin_message_read' msg.pk %}" class="btn btn-sm btn-success">Mark Read</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                <tr><td colspan="6" class="ps-4 text-muted"><small>{{ msg.message|truncatewords:30 }}</small></td></tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center text-muted">No messages yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

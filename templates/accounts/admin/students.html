@@ -1,0 +1,75 @@
+{% extends 'accounts/admin_base.html' %}
+{% block title %}Manage Students{% endblock %}
+{% block page_title %}Students{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h5 class="mb-0">All Students ({{ students.paginator.count }})</h5>
+    <a href="{% url 'admin_add_student' %}" class="btn btn-orange"><i class="fas fa-plus me-1"></i> Add Student</a>
+</div>
+
+<!-- Search -->
+<form method="get" class="mb-3">
+    <div class="input-group" style="max-width:400px;">
+        <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search by name or admission number…">
+        <button class="btn btn-orange" type="submit"><i class="fas fa-search"></i></button>
+        {% if q %}<a href="{% url 'admin_students' %}" class="btn btn-outline-secondary">Clear</a>{% endif %}
+    </div>
+</form>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr><th>Admission No</th><th>Name</th><th>Email</th><th>Phone</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for s in students %}
+                <tr>
+                    <td><span class="badge bg-warning text-dark">{{ s.admission_number }}</span></td>
+                    <td class="fw-500">{{ s.user.get_full_name }}</td>
+                    <td class="text-muted">{{ s.user.email|default:"—" }}</td>
+                    <td>{{ s.phone|default:"—" }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger"
+                            data-delete-url="{% url 'admin_delete' 'student' s.pk %}"
+                            data-delete-label="{{ s.user.get_full_name }}"
+                            data-delete-next="{% url 'admin_students' %}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">
+                        <i class="fas fa-user-graduate fa-2x mb-2 d-block" style="opacity:0.3;"></i>
+                        {% if q %}No students match "{{ q }}".{% else %}No students yet. <a href="{% url 'admin_add_student' %}">Add the first one →</a>{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if students.has_other_pages %}
+<nav class="mt-3">
+    <ul class="pagination justify-content-center">
+        {% if students.has_previous %}
+        <li class="page-item"><a class="page-link" href="?page={{ students.previous_page_number }}{% if q %}&q={{ q }}{% endif %}">‹ Prev</a></li>
+        {% endif %}
+        {% for num in students.paginator.page_range %}
+            {% if students.number == num %}
+            <li class="page-item active"><span class="page-link" style="background:var(--orange);border-color:var(--orange);">{{ num }}</span></li>
+            {% elif num > students.number|add:'-3' and num < students.number|add:'3' %}
+            <li class="page-item"><a class="page-link" href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}">{{ num }}</a></li>
+            {% endif %}
+        {% endfor %}
+        {% if students.has_next %}
+        <li class="page-item"><a class="page-link" href="?page={{ students.next_page_number }}{% if q %}&q={{ q }}{% endif %}">Next ›</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

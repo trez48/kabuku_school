@@ -1,0 +1,65 @@
+{% extends 'accounts/admin_base.html' %}
+{% block title %}Manage Staff{% endblock %}
+{% block page_title %}Staff Members{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+    <h5 class="mb-0">All Staff ({{ staff.paginator.count }})</h5>
+    <a href="{% url 'admin_add_staff' %}" class="btn btn-orange"><i class="fas fa-plus me-1"></i> Add Staff</a>
+</div>
+
+<form method="get" class="mb-3">
+    <div class="input-group" style="max-width:400px;">
+        <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search by name or subject…">
+        <button class="btn btn-orange" type="submit"><i class="fas fa-search"></i></button>
+        {% if q %}<a href="{% url 'admin_staff' %}" class="btn btn-outline-secondary">Clear</a>{% endif %}
+    </div>
+</form>
+
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>Name</th><th>Role</th><th>Subject</th><th>Email</th><th>Phone</th><th>Actions</th></tr></thead>
+            <tbody>
+                {% for s in staff %}
+                <tr>
+                    <td class="fw-500">{{ s.name }}</td>
+                    <td><span class="badge bg-secondary">{{ s.get_role_display }}</span></td>
+                    <td>{{ s.subject|default:"—" }}</td>
+                    <td class="text-muted">{{ s.email|default:"—" }}</td>
+                    <td>{{ s.phone|default:"—" }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger"
+                            data-delete-url="{% url 'admin_delete' 'staff' s.pk %}"
+                            data-delete-label="{{ s.name }}"
+                            data-delete-next="{% url 'admin_staff' %}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">
+                        <i class="fas fa-chalkboard-teacher fa-2x mb-2 d-block" style="opacity:0.3;"></i>
+                        {% if q %}No staff match "{{ q }}".{% else %}No staff yet. <a href="{% url 'admin_add_staff' %}">Add the first one →</a>{% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% if staff.has_other_pages %}
+<nav class="mt-3">
+    <ul class="pagination justify-content-center">
+        {% if staff.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ staff.previous_page_number }}{% if q %}&q={{ q }}{% endif %}">‹ Prev</a></li>{% endif %}
+        {% for num in staff.paginator.page_range %}
+            {% if staff.number == num %}<li class="page-item active"><span class="page-link" style="background:var(--orange);border-color:var(--orange);">{{ num }}</span></li>
+            {% elif num > staff.number|add:'-3' and num < staff.number|add:'3' %}<li class="page-item"><a class="page-link" href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}">{{ num }}</a></li>{% endif %}
+        {% endfor %}
+        {% if staff.has_next %}<li class="page-item"><a class="page-link" href="?page={{ staff.next_page_number }}{% if q %}&q={{ q }}{% endif %}">Next ›</a></li>{% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

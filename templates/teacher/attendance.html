@@ -1,0 +1,54 @@
+{% extends 'teacher/base.html' %}
+{% block title %}Attendance - {{ classroom.name }}{% endblock %}
+{% block page_title %}Take Attendance — {{ classroom.name }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body p-4">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <label class="form-label">Date</label>
+                    <input type="date" name="date" class="form-control" value="{{ today|date:'Y-m-d' }}">
+                </div>
+                <div class="col-md-9 d-flex align-items-end">
+                    <div class="ms-3">
+                        <span class="badge bg-success me-1">P = Present</span>
+                        <span class="badge bg-danger me-1">A = Absent</span>
+                        <span class="badge bg-warning text-dark me-1">L = Late</span>
+                        <span class="badge bg-info me-1">E = Excused</span>
+                    </div>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead><tr><th>#</th><th>Student Name</th><th>Admission No</th><th>Status</th></tr></thead>
+                    <tbody>
+                        {% for e in enrollments %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ e.student.get_full_name }}</td>
+                            <td>{{ e.student.username }}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <input type="radio" class="btn-check" name="status_{{ e.student.pk }}" id="p_{{ e.student.pk }}" value="present" checked>
+                                    <label class="btn btn-outline-success" for="p_{{ e.student.pk }}">P</label>
+                                    <input type="radio" class="btn-check" name="status_{{ e.student.pk }}" id="a_{{ e.student.pk }}" value="absent">
+                                    <label class="btn btn-outline-danger" for="a_{{ e.student.pk }}">A</label>
+                                    <input type="radio" class="btn-check" name="status_{{ e.student.pk }}" id="l_{{ e.student.pk }}" value="late">
+                                    <label class="btn btn-outline-warning" for="l_{{ e.student.pk }}">L</label>
+                                    <input type="radio" class="btn-check" name="status_{{ e.student.pk }}" id="e_{{ e.student.pk }}" value="excused">
+                                    <label class="btn btn-outline-info" for="e_{{ e.student.pk }}">E</label>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <button type="submit" class="btn btn-orange"><i class="fas fa-save me-2"></i>Save Attendance</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

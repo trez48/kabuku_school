@@ -1,0 +1,29 @@
+{% extends 'accounts/admin_base.html' %}
+{% block title %}Gallery{% endblock %}
+{% block page_title %}Photo Gallery{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+    <h5>Albums ({{ albums.count }})</h5>
+    <a href="{% url 'admin_add_album' %}" class="btn btn-orange"><i class="fas fa-plus"></i> Add Album</a>
+</div>
+{% for album in albums %}
+<div class="card mb-3">
+    <div class="card-header d-flex justify-content-between">
+        <strong>{{ album.title }}</strong>
+        <a href="{% url 'admin_delete' 'album' album.pk %}" class="btn btn-sm btn-danger" onclick="return confirm('Delete album and all photos?')"><i class="fas fa-trash"></i></a>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            {% for photo in album.photos.all %}
+            <div class="col-md-2 mb-2">
+                <img src="{{ photo.image.url }}" class="img-fluid rounded" alt="{{ photo.caption }}">
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% empty %}
+<div class="text-center text-muted">No albums yet.</div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends 'teacher/base.html' %}
+{% block title %}Enter Marks - {{ classroom.name }}{% endblock %}
+{% block page_title %}Enter Marks — {{ classroom.name }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body p-4">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row g-3 mb-4">
+                <div class="col-md-3">
+                    <label class="form-label">Subject</label>
+                    <select name="subject" class="form-select" required>
+                        <option value="">Select Subject</option>
+                        {% for s in subjects %}
+                        <option value="{{ s.pk }}">{{ s.name }} ({{ s.code }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Exam Type</label>
+                    <select name="exam_type" class="form-select" required>
+                        <option value="ca">Continuous Assessment</option>
+                        <option value="midterm">Midterm</option>
+                        <option value="terminal">Terminal</option>
+                        <option value="mock">Mock</option>
+                        <option value="practical">Practical</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Term</label>
+                    <select name="term" class="form-select" required>
+                        <option value="Term 1">Term 1</option>
+                        <option value="Term 2">Term 2</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Year</label>
+                    <input type="number" name="year" class="form-control" value="2026" required>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">Max Score</label>
+                    <input type="number" name="max_score" class="form-control" value="100" required>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead><tr><th>#</th><th>Student Name</th><th>Admission No</th><th style="width:120px;">Score</th></tr></thead>
+                    <tbody>
+                        {% for e in enrollments %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ e.student.get_full_name }}</td>
+                            <td>{{ e.student.username }}</td>
+                            <td><input type="number" name="score_{{ e.student.pk }}" class="form-control form-control-sm" step="0.01" min="0" placeholder="—"></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <button type="submit" class="btn btn-orange"><i class="fas fa-save me-2"></i>Save Marks</button>
+            <a href="{% url 'teacher_classes' %}" class="btn btn-outline-dark ms-2">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

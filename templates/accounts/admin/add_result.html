@@ -1,0 +1,55 @@
+{% extends 'accounts/admin_base.html' %}
+{% block title %}Add Result{% endblock %}
+{% block page_title %}Add Examination Result{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Student Name</label>
+                    <input type="text" name="student_name" class="form-control" required>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Admission Number</label>
+                    <input type="text" name="admission_number" class="form-control" required>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Combination</label>
+                    <select name="combination" class="form-select" required>
+                        {% for c in combinations %}
+                        <option value="{{ c.pk }}">{{ c.code }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Exam Name</label>
+                    <input type="text" name="exam_name" class="form-control" placeholder="e.g. Mid-Term 2026" required>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Year</label>
+                    <input type="number" name="year" class="form-control" value="2026" required>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">GPA</label>
+                    <input type="number" name="gpa" class="form-control" step="0.01">
+                </div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Results (one per line: Subject: Grade)</label>
+                <textarea name="results" class="form-control" rows="6" placeholder="Physics: A&#10;Geography: B&#10;Mathematics: A" required></textarea>
+            </div>
+            <div class="form-check mb-3">
+                <input type="checkbox" name="published" class="form-check-input" id="published" checked>
+                <label class="form-check-label" for="published">Publish (visible to students)</label>
+            </div>
+            <button type="submit" class="btn btn-orange">Save Result</button>
+            <a href="{% url 'admin_results' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

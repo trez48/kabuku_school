@@ -1,0 +1,38 @@
+{% extends 'accounts/admin_base.html' %}
+{% block title %}Add Class{% endblock %}
+{% block page_title %}Add Class{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body p-4">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Class Name</label>
+                    <input type="text" name="name" class="form-control" placeholder="e.g. Form 5 PGM" required>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Combination</label>
+                    <select name="combination" class="form-select" required>
+                        {% for c in combinations %}<option value="{{ c.pk }}">{{ c.code }} - {{ c.name }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Class Teacher</label>
+                    <select name="class_teacher" class="form-select">
+                        <option value="">-- None --</option>
+                        {% for t in teachers %}<option value="{{ t.pk }}">{{ t.get_full_name }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <label class="form-label">Year</label>
+                    <input type="number" name="year" class="form-control" value="2026">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-orange">Create Class</button>
+            <a href="{% url 'admin_classes' %}" class="btn btn-outline-dark ms-2">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

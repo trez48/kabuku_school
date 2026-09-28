@@ -1,0 +1,46 @@
+{% extends 'accounts/admin_base.html' %}
+{% block title %}Add Fee{% endblock %}
+{% block page_title %}Add Fee Record{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body p-4">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Student</label>
+                    <select name="student" class="form-select" required>
+                        <option value="">Select Student</option>
+                        {% for s in students %}<option value="{{ s.pk }}">{{ s.get_full_name }} ({{ s.username }})</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Description</label>
+                    <input type="text" name="description" class="form-control" placeholder="e.g. Term 1 Fees 2026" required>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">GePG Control Number</label>
+                    <input type="text" name="gepg_control_number" class="form-control">
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Amount (TZS)</label>
+                    <input type="number" name="amount" class="form-control" required>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Amount Paid (TZS)</label>
+                    <input type="number" name="paid" class="form-control" value="0">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label class="form-label">Due Date</label>
+                    <input type="date" name="due_date" class="form-control">
+                </div>
+            </div>
+            <button type="submit" class="btn btn-orange">Save</button>
+            <a href="{% url 'admin_fees' %}" class="btn btn-outline-dark ms-2">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

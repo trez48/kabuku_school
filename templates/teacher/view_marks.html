@@ -1,0 +1,53 @@
+{% extends 'teacher/base.html' %}
+{% block title %}View Marks - {{ classroom.name }}{% endblock %}
+{% block page_title %}Marks — {{ classroom.name }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <select name="subject" class="form-select form-select-sm">
+                    <option value="">All Subjects</option>
+                    {% for s in subjects %}
+                    <option value="{{ s.pk }}" {% if subject_filter == s.pk|stringformat:"d" %}selected{% endif %}>{{ s.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select name="exam_type" class="form-select form-select-sm">
+                    <option value="">All Exam Types</option>
+                    <option value="ca" {% if exam_filter == "ca" %}selected{% endif %}>CA</option>
+                    <option value="midterm" {% if exam_filter == "midterm" %}selected{% endif %}>Midterm</option>
+                    <option value="terminal" {% if exam_filter == "terminal" %}selected{% endif %}>Terminal</option>
+                    <option value="mock" {% if exam_filter == "mock" %}selected{% endif %}>Mock</option>
+                    <option value="practical" {% if exam_filter == "practical" %}selected{% endif %}>Practical</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-sm btn-orange">Filter</button>
+            </div>
+        </form>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>Student</th><th>Subject</th><th>Exam</th><th>Score</th><th>%</th><th>Grade</th><th>Term</th></tr></thead>
+            <tbody>
+                {% for m in marks %}
+                <tr>
+                    <td>{{ m.student.get_full_name }}</td>
+                    <td><span class="badge bg-warning text-dark">{{ m.subject.code }}</span></td>
+                    <td>{{ m.get_exam_type_display }}</td>
+                    <td>{{ m.score }}/{{ m.max_score }}</td>
+                    <td>{{ m.percentage }}%</td>
+                    <td><span class="badge {% if m.grade == 'A' %}bg-success{% elif m.grade == 'B' %}bg-primary{% elif m.grade == 'C' %}bg-warning text-dark{% else %}bg-danger{% endif %}">{{ m.grade }}</span></td>
+                    <td>{{ m.term }} {{ m.year }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center text-muted py-3">No marks found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

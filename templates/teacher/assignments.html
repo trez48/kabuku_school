@@ -1,0 +1,30 @@
+{% extends 'teacher/base.html' %}
+{% block title %}Assignments{% endblock %}
+{% block page_title %}Assignments{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+    <span>{{ assignments.count }} assignment{{ assignments.count|pluralize }}</span>
+    <a href="{% url 'upload_assignment' %}" class="btn btn-orange"><i class="fas fa-plus me-1"></i> New Assignment</a>
+</div>
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>Title</th><th>Subject</th><th>Class</th><th>Deadline</th><th>File</th></tr></thead>
+            <tbody>
+                {% for a in assignments %}
+                <tr>
+                    <td class="fw-bold">{{ a.title }}</td>
+                    <td><span class="badge bg-warning text-dark">{{ a.subject.code }}</span></td>
+                    <td>{{ a.classroom.name }}</td>
+                    <td>{% if a.deadline %}{{ a.deadline|date:"M d, Y" }}{% else %}-{% endif %}</td>
+                    <td>{% if a.file %}<a href="{{ a.file.url }}" class="btn btn-sm btn-outline-dark"><i class="fas fa-download"></i></a>{% else %}-{% endif %}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center text-muted py-3">No assignments yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

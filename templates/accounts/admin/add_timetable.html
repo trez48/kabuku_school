@@ -1,0 +1,55 @@
+{% extends 'accounts/admin_base.html' %}
+{% block title %}Add Timetable Slot{% endblock %}
+{% block page_title %}Add Timetable Slot{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body p-4">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Class</label>
+                    <select name="classroom" class="form-select" required>
+                        {% for c in classes %}<option value="{{ c.pk }}">{{ c.name }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Subject</label>
+                    <select name="subject" class="form-select" required>
+                        {% for s in subjects %}<option value="{{ s.pk }}">{{ s.name }} ({{ s.code }})</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Teacher</label>
+                    <select name="teacher" class="form-select" required>
+                        {% for t in teachers %}<option value="{{ t.pk }}">{{ t.get_full_name }}</option>{% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Day</label>
+                    <select name="day" class="form-select" required>
+                        <option value="mon">Monday</option>
+                        <option value="tue">Tuesday</option>
+                        <option value="wed">Wednesday</option>
+                        <option value="thu">Thursday</option>
+                        <option value="fri">Friday</option>
+                    </select>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Start Time</label>
+                    <input type="time" name="start_time" class="form-control" required>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">End Time</label>
+                    <input type="time" name="end_time" class="form-control" required>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-orange">Add Slot</button>
+            <a href="{% url 'admin_timetable' %}" class="btn btn-outline-dark ms-2">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

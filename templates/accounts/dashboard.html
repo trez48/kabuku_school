@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - Kabuku Secondary School{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Welcome, {{ request.user.get_full_name|default:request.user.username }}</h2>
+            <a href="{% url 'logout' %}" class="btn btn-outline-dark">Logout</a>
+        </div>
+
+        {% if profile %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5>Profile Information</h5>
+                <p><strong>Role:</strong> {{ profile.get_role_display }}</p>
+                {% if profile.admission_number %}<p><strong>Admission No:</strong> {{ profile.admission_number }}</p>{% endif %}
+                {% if profile.phone %}<p><strong>Phone:</strong> {{ profile.phone }}</p>{% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if results %}
+        <h4>Examination Results</h4>
+        {% for result in results %}
+        <div class="card mb-3">
+            <div class="card-header bg-dark text-white">
+                {{ result.exam_name }} — {{ result.year }}
+            </div>
+            <div class="card-body">
+                <p><strong>Combination:</strong> {{ result.combination.code }}</p>
+                <pre>{{ result.results }}</pre>
+                {% if result.gpa %}<p><strong>GPA:</strong> {{ result.gpa }}</p>{% endif %}
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div class="alert alert-info">No examination results available yet.</div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

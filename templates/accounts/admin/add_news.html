@@ -1,0 +1,31 @@
+{% extends 'accounts/admin_base.html' %}
+{% block title %}Add News{% endblock %}
+{% block page_title %}Add News Post{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">Title</label>
+                <input type="text" name="title" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Content</label>
+                <textarea name="content" class="form-control" rows="6" required></textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Image (optional)</label>
+                <input type="file" name="image" class="form-control" accept="image/*">
+            </div>
+            <div class="form-check mb-3">
+                <input type="checkbox" name="published" class="form-check-input" id="published" checked>
+                <label class="form-check-label" for="published">Publish</label>
+            </div>
+            <button type="submit" class="btn btn-orange">Save</button>
+            <a href="{% url 'admin_news' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

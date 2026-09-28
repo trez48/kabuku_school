@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Events - Kabuku Secondary School{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container"><h1>Events Calendar</h1></div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            {% for event in events %}
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex">
+                            <div class="event-date-box me-3 text-center">
+                                <span class="d-block fs-2 fw-bold text-orange">{{ event.date|date:"d" }}</span>
+                                <span>{{ event.date|date:"M" }}</span>
+                                <span class="d-block">{{ event.date|date:"Y" }}</span>
+                            </div>
+                            <div>
+                                <h5>{{ event.title }}</h5>
+                                <p>{{ event.description }}</p>
+                                {% if event.location %}<p class="text-muted"><i class="fas fa-map-marker-alt"></i> {{ event.location }}</p>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center">
+                <p class="text-muted">No upcoming events at this time.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

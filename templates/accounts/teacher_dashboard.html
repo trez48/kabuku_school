@@ -1,0 +1,34 @@
+{% extends 'base.html' %}
+
+{% block title %}Teacher Dashboard - Kabuku Secondary School{% endblock %}
+
+{% block content %}
+<section class="py-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Welcome, {{ request.user.get_full_name|default:request.user.username }}</h2>
+            <a href="{% url 'logout' %}" class="btn btn-outline-dark">Logout</a>
+        </div>
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5>Your Profile</h5>
+                <p><strong>Role:</strong> Teacher</p>
+                {% if profile.phone %}<p><strong>Phone:</strong> {{ profile.phone }}</p>{% endif %}
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><strong>Upcoming Events</strong></div>
+            <div class="card-body">
+                {% for event in events %}
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-dark me-2">{{ event.date|date:"M d" }}</span>
+                    <span>{{ event.title }}</span>
+                </div>
+                {% empty %}
+                <p class="text-muted">No upcoming events.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

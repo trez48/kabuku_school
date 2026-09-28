@@ -1,0 +1,30 @@
+{% extends 'accounts/admin_base.html' %}
+{% block title %}Timetable{% endblock %}
+{% block page_title %}Timetable Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between mb-3">
+    <span>{{ slots.count }} slots</span>
+    <a href="{% url 'admin_add_timetable' %}" class="btn btn-orange"><i class="fas fa-plus me-1"></i> Add Slot</a>
+</div>
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>Day</th><th>Time</th><th>Subject</th><th>Teacher</th><th>Class</th></tr></thead>
+            <tbody>
+                {% for s in slots %}
+                <tr>
+                    <td class="fw-bold">{{ s.get_day_display }}</td>
+                    <td>{{ s.start_time|time:"H:i" }} - {{ s.end_time|time:"H:i" }}</td>
+                    <td><span class="badge bg-warning text-dark">{{ s.subject.code }}</span> {{ s.subject.name }}</td>
+                    <td>{{ s.teacher.get_full_name }}</td>
+                    <td>{{ s.classroom.name }}</td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center text-muted">No timetable slots yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

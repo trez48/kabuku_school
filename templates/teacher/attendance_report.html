@@ -1,0 +1,32 @@
+{% extends 'teacher/base.html' %}
+{% block title %}Attendance Report - {{ classroom.name }}{% endblock %}
+{% block page_title %}Attendance Report — {{ classroom.name }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead><tr><th>#</th><th>Student</th><th>Total Days</th><th>Present</th><th>Absent</th><th>Rate</th><th>Status</th></tr></thead>
+            <tbody>
+                {% for s in stats %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td class="fw-bold">{{ s.student.get_full_name }}</td>
+                    <td>{{ s.total }}</td>
+                    <td class="text-success">{{ s.present }}</td>
+                    <td class="text-danger">{{ s.absent }}</td>
+                    <td>{{ s.rate }}%</td>
+                    <td>
+                        {% if s.rate >= 80 %}<span class="badge bg-success">Good</span>
+                        {% elif s.rate >= 60 %}<span class="badge bg-warning text-dark">Warning</span>
+                        {% else %}<span class="badge bg-danger">Critical</span>{% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center text-muted py-3">No attendance records yet.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

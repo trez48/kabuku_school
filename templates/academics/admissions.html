@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}Admissions - Kabuku Secondary School{% endblock %}
+
+{% block content %}
+<section class="page-header">
+    <div class="container"><h1>Admissions</h1></div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5>Admission Requirements</h5>
+                        <ul>
+                            <li>Completed O-Level (Form 4)</li>
+                            <li>Minimum Division I-III in CSEE</li>
+                            <li>Pass in relevant subjects for chosen combination</li>
+                            <li>Valid CSEE certificate or results slip</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h5><i class="fas fa-money-bill text-orange"></i> Payment</h5>
+                        <p>All fees are paid through <strong>GePG</strong> (Government electronic Payment Gateway).</p>
+                        <p>A control number will be issued upon application approval.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-8">
+                <h3>Online Application Form</h3>
+                <form method="post" class="mt-3">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Full Name</label>
+                            <input type="text" name="full_name" class="form-control" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Date of Birth</label>
+                            <input type="date" name="date_of_birth" class="form-control" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Gender</label>
+                            <select name="gender" class="form-select" required>
+                                <option value="">Select</option>
+                                <option value="M">Male</option>
+                                <option value="F">Female</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Previous School</label>
+                            <input type="text" name="previous_school" class="form-control" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Index Number</label>
+                            <input type="text" name="index_number" class="form-control" required>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label class="form-label">Combination</label>
+                            <select name="combination" class="form-select" required>
+                                <option value="">Select</option>
+                                {% for combo in combinations %}
+                                <option value="{{ combo.id }}">{{ combo.code }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <hr>
+                    <h5>Parent/Guardian Information</h5>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Parent Name</label>
+                            <input type="text" name="parent_name" class="form-control" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Parent Phone</label>
+                            <input type="tel" name="parent_phone" class="form-control" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Parent Email</label>
+                            <input type="email" name="parent_email" class="form-control">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Home Address</label>
+                        <textarea name="address" class="form-control" rows="2" required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-orange btn-lg">Submit Application</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

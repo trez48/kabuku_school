@@ -1,0 +1,27 @@
+{% extends 'accounts/admin_base.html' %}
+{% block title %}Add Album{% endblock %}
+{% block page_title %}Add Photo Album{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label class="form-label">Album Title</label>
+                <input type="text" name="title" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <textarea name="description" class="form-control" rows="2"></textarea>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Photos (select multiple)</label>
+                <input type="file" name="photos" class="form-control" accept="image/*" multiple>
+            </div>
+            <button type="submit" class="btn btn-orange">Create Album</button>
+            <a href="{% url 'admin_gallery' %}" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

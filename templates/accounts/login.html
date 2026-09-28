@@ -1,0 +1,305 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Kabuku Secondary School</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --orange: #F57C00; --orange-dark: #E65100; --dark: #1B2A4A; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            background: #f0f2f5;
+        }
+        .login-wrapper {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Left - Carousel Side */
+        .carousel-side {
+            flex: 1;
+            position: relative;
+            display: none;
+            overflow: hidden;
+        }
+        @media(min-width: 992px) {
+            .carousel-side { display: block; }
+        }
+        .carousel-side .slide {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            transition: opacity 1.2s ease-in-out;
+            background-size: cover;
+            background-position: center;
+        }
+        .carousel-side .slide.active { opacity: 1; }
+        .carousel-side .slide::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: rgba(180, 100, 20, 0.45);
+        }
+        .carousel-content {
+            position: absolute;
+            bottom: 80px;
+            left: 50px;
+            right: 50px;
+            z-index: 2;
+            color: #fff;
+        }
+        .carousel-content h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            transition: all 0.8s ease 0.3s;
+        }
+        .carousel-content p {
+            font-size: 1rem;
+            transition: all 0.8s ease 0.5s;
+            color: rgba(255,255,255,0.9);
+        }
+        .carousel-dots {
+            position: absolute;
+            bottom: 35px;
+            left: 50px;
+            z-index: 2;
+            display: flex;
+            gap: 8px;
+        }
+        .carousel-dots .dot {
+            width: 30px;
+            height: 4px;
+            background: rgba(255,255,255,0.4);
+            border-radius: 2px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .carousel-dots .dot.active {
+            background: var(--orange);
+            width: 45px;
+        }
+
+        /* Right - Form Side */
+        .form-side {
+            width: 100%;
+            max-width: 520px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            background: #fff;
+        }
+        @media(min-width: 992px) {
+            .form-side {
+                min-width: 520px;
+                box-shadow: -10px 0 40px rgba(0,0,0,0.1);
+            }
+        }
+        @media(max-width: 991px) {
+            .form-side {
+                max-width: 100%;
+                margin: 0 auto;
+            }
+        }
+        .form-inner { width: 100%; max-width: 380px; }
+        .login-logo {
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(245,124,0,0.3);
+        }
+        .login-logo i { color: #fff; font-size: 1.6rem; }
+        .form-inner h3 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            color: var(--dark);
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+        .form-inner .subtitle {
+            color: #888;
+            font-size: 0.88rem;
+            margin-bottom: 30px;
+        }
+        .input-group-icon {
+            position: relative;
+            margin-bottom: 18px;
+        }
+        .input-group-icon i {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #bbb;
+            font-size: 0.9rem;
+            z-index: 2;
+            transition: color 0.3s;
+        }
+        .input-group-icon input {
+            width: 100%;
+            border: 2px solid #eee;
+            border-radius: 12px;
+            padding: 14px 16px 14px 46px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            outline: none;
+        }
+        .input-group-icon input:focus {
+            border-color: var(--orange);
+            box-shadow: 0 0 0 4px rgba(245,124,0,0.08);
+        }
+        .input-group-icon input:focus + i,
+        .input-group-icon:focus-within i {
+            color: var(--orange);
+        }
+        .btn-login {
+            background: linear-gradient(135deg, var(--orange), var(--orange-dark));
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-weight: 600;
+            font-size: 1rem;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 6px 20px rgba(245,124,0,0.3);
+            margin-top: 8px;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(245,124,0,0.4);
+        }
+        .back-link {
+            color: #999;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.3s;
+        }
+        .back-link:hover { color: var(--orange); }
+        .alert { border-radius: 10px; font-size: 0.85rem; border: none; }
+        .school-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(245,124,0,0.08);
+            color: var(--orange);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-wrapper">
+        <!-- Left: Image Carousel -->
+        <div class="carousel-side">
+            <div class="slide active" style="background-image: url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?w=1200&q=80');"></div>
+            <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=1200&q=80');"></div>
+            <div class="slide" style="background-image: url('https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=1200&q=80');"></div>
+
+            <div class="carousel-content active" id="carouselContent">
+                <h2 id="slideTitle">Excellence in Education</h2>
+                <p id="slideText">Shaping future leaders through quality A-Level education in science and mathematics.</p>
+            </div>
+
+            <div class="carousel-dots">
+                <div class="dot active" data-index="0"></div>
+                <div class="dot" data-index="1"></div>
+                <div class="dot" data-index="2"></div>
+            </div>
+        </div>
+
+        <!-- Right: Login Form -->
+        <div class="form-side">
+            <div class="form-inner">
+                <div class="login-logo">
+                    <i class="fas fa-school"></i>
+                </div>
+                <div class="school-badge">
+                    <i class="fas fa-shield-halved"></i> Kabuku Secondary School
+                </div>
+                <h3>Welcome Back</h3>
+                <p class="subtitle">Sign in to access your portal</p>
+
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-danger"><i class="fas fa-exclamation-circle me-2"></i>{{ message }}</div>
+                {% endfor %}
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="input-group-icon">
+                        <input type="text" name="username" placeholder="Username or Admission No." required>
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="input-group-icon">
+                        <input type="password" name="password" placeholder="Password" required>
+                        <i class="fas fa-lock"></i>
+                    </div>
+                    <button type="submit" class="btn-login">
+                        <i class="fas fa-sign-in-alt me-2"></i>Sign In
+                    </button>
+                </form>
+
+                <div class="text-center mt-4">
+                    <a href="{% url 'home' %}" class="back-link">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Website
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        const dots = document.querySelectorAll('.dot');
+        const content = document.getElementById('carouselContent');
+        const titleEl = document.getElementById('slideTitle');
+        const textEl = document.getElementById('slideText');
+
+        const slideData = [
+            { title: "Excellence in Education", text: "Shaping future leaders through quality A-Level education in science and mathematics." },
+            { title: "Modern Learning", text: "State-of-the-art facilities and dedicated teachers for the best learning experience." },
+            { title: "Community & Growth", text: "Building character, discipline, and lifelong skills for a brighter future." }
+        ];
+
+        let current = 0;
+        function goToSlide(index) {
+            slides[current].classList.remove('active');
+            dots[current].classList.remove('active');
+            content.classList.remove('active');
+
+            current = index;
+
+            setTimeout(() => {
+                titleEl.textContent = slideData[current].title;
+                textEl.textContent = slideData[current].text;
+                slides[current].classList.add('active');
+                dots[current].classList.add('active');
+                content.classList.add('active');
+            }, 100);
+        }
+
+        dots.forEach(dot => dot.addEventListener('click', () => goToSlide(+dot.dataset.index)));
+
+        setInterval(() => goToSlide((current + 1) % slides.length), 5000);
+    </script>
+</body>
+</html>
