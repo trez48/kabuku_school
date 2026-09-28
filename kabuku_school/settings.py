@@ -17,6 +17,15 @@ RAILWAY_HOST = os.environ.get('RAILWAY_PUBLIC_DOMAIN', '')
 if RAILWAY_HOST and RAILWAY_HOST not in ALLOWED_HOSTS:
     ALLOWED_HOSTS.append(RAILWAY_HOST)
 
+# CSRF trusted origins — required for Railway deployment
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.up.railway.app',
+    'https://kabukusecondary.up.railway.app',
+]
+# Add any custom Railway domain dynamically
+if RAILWAY_HOST:
+    CSRF_TRUSTED_ORIGINS.append(f'https://{RAILWAY_HOST}')
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
