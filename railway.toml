@@ -1,11 +1,9 @@
 [build]
 builder = "nixpacks"
+buildCommand = "pip install -r requirements.txt && python manage.py collectstatic --noinput"
 
 [deploy]
-startCommand = "gunicorn kabuku_school.wsgi --log-file -"
+startCommand = "python manage.py migrate --noinput && gunicorn kabuku_school.wsgi --log-file -"
 healthcheckPath = "/"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
-
-[[services]]
-name = "kabuku-school"
