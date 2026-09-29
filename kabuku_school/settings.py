@@ -77,14 +77,20 @@ import dj_database_url
 
 DATABASE_URL = os.environ.get('DATABASE_URL')
 if DATABASE_URL:
-    # Railway PostgreSQL
+    # Railway PostgreSQL (or any DATABASE_URL environment)
     DATABASES = {
         'default': dj_database_url.config(
             default=DATABASE_URL,
             conn_max_age=600,
-            ssl_require=True,
+            ssl_require=False,  # some Railway plans don't require SSL
         )
     }
+elif os.environ.get('RAILWAY_ENVIRONMENT'):
+    # Running on Railway but DATABASE_URL is missing — crash loudly so it's obvious
+    raise RuntimeError(
+        "DATABASE_URL is not set. Go to Railway → web service → Variables "
+        "and add DATABASE_URL referencing your PostgreSQL addon."
+    )
 else:
     # Local development — SQLite
     DATABASES = {
