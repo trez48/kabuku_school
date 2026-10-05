@@ -35,4 +35,11 @@ urlpatterns = [
     path('panel/fees/', views.admin_fees, name='admin_fees'),
     path('panel/fees/add/', views.admin_add_fee, name='admin_add_fee'),
     path('panel/delete/<str:model>/<int:pk>/', views.admin_delete, name='admin_delete'),
+    path('panel/search-suggestions/', views.search_suggestions, name='search_suggestions'),
+    # Combination management
+    path('panel/combinations/', views.admin_combinations, name='admin_combinations'),
+    path('panel/combinations/add/', views.admin_add_combination, name='admin_add_combination'),
+    path('panel/combinations/<int:pk>/edit/', views.admin_edit_combination, name='admin_edit_combination'),
+    # Student class progression
+    path('panel/students/<int:pk>/move-class/', views.admin_move_student, name='admin_move_student'),
 ]

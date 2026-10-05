@@ -1,0 +1,73 @@
+{% extends 'accounts/admin_base.html' %}
+{% block title %}Combinations{% endblock %}
+{% block page_title %}Combinations{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted">{{ combinations.count }} combination{{ combinations.count|pluralize }}</span>
+    <a href="{% url 'admin_add_combination' %}" class="btn btn-orange">
+        <i class="fas fa-plus me-1"></i> Add Combination
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Subjects</th>
+                    <th>Classes using it</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in combinations %}
+                <tr>
+                    <td>
+                        <span class="badge bg-warning text-dark fs-6 px-3">{{ c.code }}</span>
+                    </td>
+                    <td class="fw-semibold">{{ c.name }}</td>
+                    <td class="text-muted small">{{ c.subjects|default:"—" }}</td>
+                    <td>
+                        {% for cls in c.classroom_set.all %}
+                            <span class="badge bg-secondary me-1">{{ cls.name }}</span>
+                        {% empty %}
+                            <span class="text-muted small">None</span>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        <a href="{% url 'admin_edit_combination' c.pk %}"
+                           class="btn btn-sm btn-outline-primary me-1">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <form method="post" action="{% url 'admin_delete' 'combination' c.pk %}"
+                              onsubmit="return confirm('Delete combination {{ c.code }}? This will also affect classes and subjects linked to it.')"
+                              class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{% url 'admin_combinations' %}">
+                            <button class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center text-muted py-4">
+                        No combinations yet. <a href="{% url 'admin_add_combination' %}">Add one</a>.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="alert alert-info mt-4">
+    <i class="fas fa-info-circle me-2"></i>
+    <strong>Note:</strong> Deleting a combination will also delete all classes, subjects, marks, and
+    enrollment records linked to it. Only delete if no students are enrolled.
+</div>
+{% endblock %}

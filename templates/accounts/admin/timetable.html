@@ -1,27 +1,110 @@
 {% extends 'accounts/admin_base.html' %}
 {% block title %}Timetable{% endblock %}
-{% block page_title %}Timetable Management{% endblock %}
+{% block page_title %}School Timetable{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between mb-3">
-    <span>{{ slots.count }} slots</span>
-    <a href="{% url 'admin_add_timetable' %}" class="btn btn-orange"><i class="fas fa-plus me-1"></i> Add Slot</a>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <span class="text-muted">{{ slots.count }} total slots</span>
+    <a href="{% url 'admin_add_timetable' %}" class="btn btn-orange">
+        <i class="fas fa-plus me-1"></i> Add Slot
+    </a>
 </div>
-<div class="card">
+
+<!-- Colour legend -->
+<div class="d-flex flex-wrap gap-2 mb-4">
+    <span class="badge px-3 py-2 text-white" style="background:#4361ee;">PHY — Physics</span>
+    <span class="badge px-3 py-2 text-white" style="background:#f72585;">MAT — Mathematics</span>
+    <span class="badge px-3 py-2 text-white" style="background:#0077b6;">GEO — Geography</span>
+    <span class="badge px-3 py-2 text-white" style="background:#7209b7;">CHE — Chemistry</span>
+    <span class="badge px-3 py-2 text-white" style="background:#06d6a0;">BIO — Biology</span>
+    <span class="badge px-3 py-2 text-white" style="background:#fb8500;">ENG — English</span>
+</div>
+
+<!-- One grid per classroom -->
+{% for classroom, week in timetable_data.items %}
+<div class="mb-5">
+    <h5 class="fw-bold mb-3">
+        <i class="fas fa-chalkboard-teacher me-2 text-warning"></i>{{ classroom }}
+    </h5>
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-bordered mb-0 text-center align-middle" style="min-width:720px;">
+                <thead class="table-dark">
+                    <tr>
+                        <th style="width:120px;">Time</th>
+                        <th>Monday</th>
+                        <th>Tuesday</th>
+                        <th>Wednesday</th>
+                        <th>Thursday</th>
+                        <th>Friday</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for period in week %}
+                    {% if period.is_break %}
+                    <tr>
+                        <td colspan="6" class="py-2 text-center fw-semibold text-muted small"
+                            style="background:#fff3cd;">
+                            {{ period.label }}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td class="fw-bold small bg-light text-nowrap">{{ period.label }}</td>
+                        {% for cell in period.cells %}
+                        <td class="p-1" style="min-width:110px;">
+                            {% if cell %}
+                            <div class="rounded p-2 text-white"
+                                 style="background:{{ cell.color }}; font-size:.82rem; line-height:1.4;">
+                                <div class="fw-bold">{{ cell.code }}</div>
+                                <div class="opacity-75" style="font-size:.72rem;">{{ cell.teacher }}</div>
+                            </div>
+                            {% endif %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% endif %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Full list -->
+<h5 class="fw-bold mb-3 mt-2"><i class="fas fa-list me-2 text-warning"></i>All Slots</h5>
+<div class="card shadow-sm">
     <div class="table-responsive">
         <table class="table table-hover mb-0">
-            <thead><tr><th>Day</th><th>Time</th><th>Subject</th><th>Teacher</th><th>Class</th></tr></thead>
+            <thead class="table-dark">
+                <tr><th>Day</th><th>Time</th><th>Subject</th><th>Teacher</th><th>Class</th><th></th></tr>
+            </thead>
             <tbody>
                 {% for s in slots %}
                 <tr>
                     <td class="fw-bold">{{ s.get_day_display }}</td>
-                    <td>{{ s.start_time|time:"H:i" }} - {{ s.end_time|time:"H:i" }}</td>
-                    <td><span class="badge bg-warning text-dark">{{ s.subject.code }}</span> {{ s.subject.name }}</td>
+                    <td class="text-nowrap small">{{ s.start_time|time:"H:i" }} – {{ s.end_time|time:"H:i" }}</td>
+                    <td>
+                        <span class="badge text-white"
+                              style="background:{% if s.subject.code == 'PHY' %}#4361ee{% elif s.subject.code == 'MAT' %}#f72585{% elif s.subject.code == 'GEO' %}#0077b6{% elif s.subject.code == 'CHE' %}#7209b7{% elif s.subject.code == 'BIO' %}#06d6a0{% elif s.subject.code == 'ENG' %}#fb8500{% else %}#6c757d{% endif %};">
+                            {{ s.subject.code }}
+                        </span>
+                        {{ s.subject.name }}
+                    </td>
                     <td>{{ s.teacher.get_full_name }}</td>
                     <td>{{ s.classroom.name }}</td>
+                    <td>
+                        <form method="post" action="{% url 'admin_delete' 'timetable' s.pk %}"
+                              onsubmit="return confirm('Delete this slot?')" class="d-inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{% url 'admin_timetable' %}">
+                            <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                        </form>
+                    </td>
                 </tr>
                 {% empty %}
-                <tr><td colspan="5" class="text-center text-muted">No timetable slots yet.</td></tr>
+                <tr><td colspan="6" class="text-center text-muted py-3">No slots yet.</td></tr>
                 {% endfor %}
             </tbody>
         </table>

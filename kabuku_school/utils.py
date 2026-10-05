@@ -2,6 +2,7 @@
 Shared utilities: decorators, validators, notification helpers.
 """
 import os
+import uuid
 from functools import wraps
 from django.shortcuts import redirect
 from django.contrib import messages
@@ -67,6 +68,19 @@ def validate_upload(file_obj):
         mb = MAX_UPLOAD_BYTES // (1024 * 1024)
         return False, f'File is too large. Maximum size is {mb} MB.'
     return True, None
+
+
+def safe_filename(original_name):
+    """
+    Generate a safe, randomized filename to prevent:
+    - Path traversal attacks (e.g. ../../etc/passwd)
+    - Filename collisions
+    - Exposing original filenames to the public
+
+    Example: 'my assignment.pdf' → 'a3f7c2d1-4e8b-4f2a-9c1d-abc123456789.pdf'
+    """
+    ext = os.path.splitext(original_name)[1].lower()
+    return f'{uuid.uuid4()}{ext}'
 
 
 # ── Notification helper ──────────────────────────────────────────────────────

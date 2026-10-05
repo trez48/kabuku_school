@@ -43,11 +43,20 @@ def staff_list(request):
 
 def contact(request):
     if request.method == 'POST':
+        name    = request.POST.get('name', '').strip()
+        email   = request.POST.get('email', '').strip()
+        subject = request.POST.get('subject', '').strip()
+        message = request.POST.get('message', '').strip()
+
+        if not all([name, email, subject, message]):
+            messages.error(request, 'All fields are required.')
+            return render(request, 'core/contact.html')
+
         ContactMessage.objects.create(
-            name=request.POST['name'],
-            email=request.POST['email'],
-            subject=request.POST['subject'],
-            message=request.POST['message'],
+            name=name,
+            email=email,
+            subject=subject,
+            message=message,
         )
         messages.success(request, 'Your message has been sent successfully!')
         return redirect('contact')

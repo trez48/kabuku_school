@@ -9,12 +9,55 @@
 </div>
 
 <form method="get" class="mb-3">
-    <div class="input-group" style="max-width:400px;">
-        <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search by student name or description…">
+    <div class="input-group" style="max-width:400px; position:relative;">
+        <input type="text" name="q" id="fees-search" value="{{ q }}"
+               class="form-control" placeholder="Search by student name or description…"
+               autocomplete="off">
         <button class="btn btn-orange" type="submit"><i class="fas fa-search"></i></button>
         {% if q %}<a href="{% url 'admin_fees' %}" class="btn btn-outline-secondary">Clear</a>{% endif %}
+        <ul id="fees-suggestions" class="list-group shadow"
+            style="display:none; position:absolute; top:100%; left:0; right:0; z-index:999; max-height:250px; overflow-y:auto;"></ul>
     </div>
 </form>
+
+<script>
+(function () {
+    const input = document.getElementById('fees-search');
+    const dropdown = document.getElementById('fees-suggestions');
+    let timer;
+
+    input.addEventListener('input', function () {
+        clearTimeout(timer);
+        const q = this.value.trim();
+        if (q.length < 2) { dropdown.style.display = 'none'; return; }
+        timer = setTimeout(() => {
+            fetch(`{% url 'search_suggestions' %}?q=${encodeURIComponent(q)}&type=fees`)
+                .then(r => r.json())
+                .then(data => {
+                    dropdown.innerHTML = '';
+                    if (!data.results.length) { dropdown.style.display = 'none'; return; }
+                    data.results.forEach(item => {
+                        const li = document.createElement('li');
+                        li.className = 'list-group-item list-group-item-action';
+                        li.style.cursor = 'pointer';
+                        li.textContent = item.label;
+                        li.addEventListener('mousedown', function (e) {
+                            e.preventDefault();
+                            input.value = item.value;
+                            dropdown.style.display = 'none';
+                            input.closest('form').submit();
+                        });
+                        dropdown.appendChild(li);
+                    });
+                    dropdown.style.display = 'block';
+                });
+        }, 250);
+    });
+
+    input.addEventListener('blur', () => setTimeout(() => dropdown.style.display = 'none', 200));
+    input.addEventListener('focus', () => { if (dropdown.children.length) dropdown.style.display = 'block'; });
+})();
+</script>
 
 <div class="card">
     <div class="table-responsive">

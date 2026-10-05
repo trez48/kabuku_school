@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.utils import timezone
 
 from .models import Subject, ClassRoom, StudentEnrollment, Mark, Attendance, Assignment, Note, Timetable
-from kabuku_school.utils import teacher_required, validate_upload, send_notification, notify_parents_of_student
+from kabuku_school.utils import teacher_required, validate_upload, send_notification, notify_parents_of_student, safe_filename
 
 
 def _teacher_classroom(teacher, class_pk):
@@ -301,6 +301,7 @@ def upload_assignment(request):
                 messages.error(request, err)
                 return render(request, 'teacher/upload_assignment.html',
                               {'subjects': subjects, 'classes': classes})
+            file_obj.name = safe_filename(file_obj.name)
 
         assignment = Assignment.objects.create(
             title=title,
@@ -364,6 +365,7 @@ def upload_note(request):
             messages.error(request, err)
             return render(request, 'teacher/upload_note.html',
                           {'subjects': subjects, 'classes': classes})
+        file_obj.name = safe_filename(file_obj.name)
 
         Note.objects.create(
             title=title,
@@ -389,7 +391,11 @@ def teacher_notes(request):
 @login_required
 @teacher_required
 def timetable(request):
-    schedule = Timetable.objects.filter(teacher=request.user)
+    from accounts.views import _build_print_periods
+    schedule = Timetable.objects.filter(teacher=request.user).select_related('subject', 'teacher', 'classroom')
     days = ['mon', 'tue', 'wed', 'thu', 'fri']
-    timetable_data = {day: schedule.filter(day=day) for day in days}
-    return render(request, 'teacher/timetable.html', {'timetable': timetable_data})
+    timetable_data = {day: list(schedule.filter(day=day).order_by('start_time')) for day in days}
+    return render(request, 'teacher/timetable.html', {
+        'timetable': timetable_data,
+        'print_periods': _build_print_periods(schedule),
+    })

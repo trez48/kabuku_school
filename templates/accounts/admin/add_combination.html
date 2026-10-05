@@ -1,0 +1,40 @@
+{% extends 'accounts/admin_base.html' %}
+{% block title %}Add Combination{% endblock %}
+{% block page_title %}Add Combination{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm" style="max-width:600px;">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Combination Code <span class="text-danger">*</span></label>
+                <input type="text" name="code" class="form-control" placeholder="e.g. PCB, EGM, HGE"
+                       maxlength="10" required>
+                <div class="form-text">Short code used throughout the system. Will be uppercased automatically.</div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-semibold">Full Name <span class="text-danger">*</span></label>
+                <input type="text" name="name" class="form-control"
+                       placeholder="e.g. Physics, Chemistry, Biology" required>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold">Subjects (optional description)</label>
+                <input type="text" name="subjects" class="form-control"
+                       placeholder="e.g. Physics, Chemistry, Biology, General Studies">
+                <div class="form-text">Comma-separated list of subjects in this combination.</div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-orange">
+                    <i class="fas fa-save me-1"></i> Save Combination
+                </button>
+                <a href="{% url 'admin_combinations' %}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

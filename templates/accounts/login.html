@@ -137,8 +137,10 @@
         .input-group-icon {
             position: relative;
             margin-bottom: 18px;
+            display: block;
         }
-        .input-group-icon i {
+        .input-group-icon > i.fa-user,
+        .input-group-icon > i.fa-lock {
             position: absolute;
             left: 16px;
             top: 50%;
@@ -161,10 +163,31 @@
             border-color: var(--orange);
             box-shadow: 0 0 0 4px rgba(245,124,0,0.08);
         }
-        .input-group-icon input:focus + i,
-        .input-group-icon:focus-within i {
+        .input-group-icon input:focus ~ i.fa-lock,
+        .input-group-icon input:focus ~ i.fa-user {
             color: var(--orange);
         }
+        /* Eye toggle — sits inside the input field visually */
+        .toggle-password {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #bbb;
+            font-size: 0.95rem;
+            cursor: pointer;
+            z-index: 3;
+            transition: color 0.3s;
+            background: transparent;
+            border: none;
+            padding: 2px 4px;
+            line-height: 1;
+            border-radius: 4px;
+        }
+        .toggle-password:hover { color: var(--orange); }
+        .toggle-password:focus { outline: none; }
+        /* Extra right padding so typed text doesn't go under the eye icon */
+        .input-group-icon.has-toggle input { padding-right: 46px; }
         .btn-login {
             background: linear-gradient(135deg, var(--orange), var(--orange-dark));
             color: #fff;
@@ -249,9 +272,13 @@
                         <input type="text" name="username" placeholder="Username or Admission No." required>
                         <i class="fas fa-user"></i>
                     </div>
-                    <div class="input-group-icon">
-                        <input type="password" name="password" placeholder="Password" required>
+                    <div class="input-group-icon has-toggle">
+                        <input type="password" name="password" id="passwordInput" placeholder="Password" required>
                         <i class="fas fa-lock"></i>
+                        <button type="button" class="toggle-password" onclick="togglePassword()"
+                                id="toggleBtn" tabindex="-1" aria-label="Show/hide password">
+                            <i class="fas fa-eye" id="eyeIcon"></i>
+                        </button>
                     </div>
                     <button type="submit" class="btn-login">
                         <i class="fas fa-sign-in-alt me-2"></i>Sign In
@@ -300,6 +327,20 @@
         dots.forEach(dot => dot.addEventListener('click', () => goToSlide(+dot.dataset.index)));
 
         setInterval(() => goToSlide((current + 1) % slides.length), 5000);
+
+        // Toggle password visibility
+        function togglePassword() {
+            var input = document.getElementById('passwordInput');
+            var icon  = document.getElementById('eyeIcon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+            input.focus();
+        }
     </script>
 </body>
 </html>

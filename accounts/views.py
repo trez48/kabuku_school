@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.http import JsonResponse
 
 from .models import UserProfile
 from academics.models import ExamResult, Combination, Event, AdmissionApplication
@@ -12,7 +13,55 @@ from news.models import NewsPost
 from core.models import Staff, ContactMessage, SliderImage
 from gallery.models import Album, Photo
 from teacher.models import ClassRoom, Subject, StudentEnrollment, Timetable, FeeRecord, Notification
-from kabuku_school.utils import admin_required, validate_upload
+from kabuku_school.utils import admin_required, validate_upload, safe_filename
+
+
+# ── Shared helper ─────────────────────────────────────────────────────────────
+
+_SUBJECT_COLORS = {
+    'PHY': '#4361ee', 'MAT': '#f72585', 'GEO': '#0077b6',
+    'CHE': '#7209b7', 'BIO': '#06d6a0', 'ENG': '#fb8500',
+}
+_PRINT_PERIODS = [
+    {'label': '07:30-08:30', 'start': '07:30', 'is_break': False},
+    {'label': '08:30-09:30', 'start': '08:30', 'is_break': False},
+    {'label': '09:30-10:30', 'start': '09:30', 'is_break': False},
+    {'label': '☕ Break — 10:30 to 11:00', 'is_break': True},
+    {'label': '11:00-12:00', 'start': '11:00', 'is_break': False},
+    {'label': '12:00-13:00', 'start': '12:00', 'is_break': False},
+    {'label': '🍽️ Lunch — 13:00 to 14:00', 'is_break': True},
+    {'label': '14:00-15:00', 'start': '14:00', 'is_break': False},
+    {'label': '15:00-16:00', 'start': '15:00', 'is_break': False},
+]
+_DAYS = ['mon', 'tue', 'wed', 'thu', 'fri']
+
+
+def _build_print_periods(timetable_qs):
+    """Build grid rows for printable timetable. Each row has 5 cells (Mon-Fri)."""
+    # Index: (day, start_time_str) → slot
+    slot_index = {}
+    for s in timetable_qs:
+        slot_index[(s.day, s.start_time.strftime('%H:%M'))] = s
+
+    rows = []
+    for period in _PRINT_PERIODS:
+        if period['is_break']:
+            rows.append({'is_break': True, 'label': period['label']})
+        else:
+            cells = []
+            for day in _DAYS:
+                slot = slot_index.get((day, period['start']))
+                if slot:
+                    cells.append({
+                        'code': slot.subject.code,
+                        'name': slot.subject.name,
+                        'teacher': slot.teacher.get_full_name(),
+                        'color': _SUBJECT_COLORS.get(slot.subject.code, '#6c757d'),
+                    })
+                else:
+                    cells.append(None)
+            rows.append({'is_break': False, 'label': period['label'], 'cells': cells})
+    return rows
 
 
 # ── Auth ─────────────────────────────────────────────────────────────────────
@@ -277,6 +326,7 @@ def dashboard(request):
                 classroom=enrollment.classroom
             ).select_related('subject', 'teacher').order_by('day', 'start_time')
             context['timetable'] = {day: list(timetable_qs.filter(day=day)) for day in days}
+            context['print_periods'] = _build_print_periods(timetable_qs)
 
         # ── Fees ──────────────────────────────────────────────────────────────
         fee_records = FeeRecord.objects.filter(student=child_user)
@@ -332,6 +382,7 @@ def dashboard(request):
                     classroom=enrollment.classroom
                 ).select_related('subject', 'teacher').order_by('day', 'start_time')
                 context['timetable'] = {day: list(timetable_qs.filter(day=day)) for day in days}
+                context['print_periods'] = _build_print_periods(timetable_qs)
             # Fees
             fee_records = FeeRecord.objects.filter(student=request.user)
             context['fees'] = fee_records
@@ -550,6 +601,7 @@ def admin_add_news(request):
             if not ok:
                 messages.error(request, err)
                 return render(request, 'accounts/admin/add_news.html')
+            image_file.name = safe_filename(image_file.name)
 
         post = NewsPost(title=title, content=content, published='published' in request.POST)
         if image_file:
@@ -676,6 +728,7 @@ def admin_add_staff(request):
             if not ok:
                 messages.error(request, err)
                 return render(request, 'accounts/admin/add_staff.html')
+            photo_file.name = safe_filename(photo_file.name)
 
         s = Staff(
             name=name,
@@ -743,6 +796,7 @@ def admin_add_album(request):
             if not ok:
                 messages.warning(request, f'Skipped "{f.name}": {err}')
                 continue
+            f.name = safe_filename(f.name)
             Photo.objects.create(album=album, image=f)
         messages.success(request, 'Album created.')
         return redirect('admin_gallery')
@@ -768,6 +822,8 @@ def admin_delete(request, model, pk):
         'album': Album,
         'parent': UserProfile,
         'feerecord': FeeRecord,
+        'timetable': Timetable,
+        'combination': Combination,
     }
     if model not in model_map:
         messages.error(request, 'Unknown record type.')
@@ -882,8 +938,64 @@ def admin_enroll_student(request):
 @login_required
 @admin_required
 def admin_timetable(request):
-    slots = Timetable.objects.all().select_related('classroom', 'subject', 'teacher')
-    return render(request, 'accounts/admin/timetable.html', {'slots': slots})
+    slots = Timetable.objects.all().select_related('classroom', 'subject', 'teacher').order_by('classroom', 'day', 'start_time')
+
+    # Subject colour map
+    COLORS = {
+        'PHY': '#4361ee', 'MAT': '#f72585', 'GEO': '#0077b6',
+        'CHE': '#7209b7', 'BIO': '#06d6a0', 'ENG': '#fb8500',
+    }
+
+    # Time periods for the grid rows
+    PERIODS = [
+        {'label': '07:30 – 08:30', 'start': '07:30', 'end': '08:30', 'is_break': False},
+        {'label': '08:30 – 09:30', 'start': '08:30', 'end': '09:30', 'is_break': False},
+        {'label': '09:30 – 10:30', 'start': '09:30', 'end': '10:30', 'is_break': False},
+        {'label': '☕ Break — 10:30 to 11:00', 'is_break': True},
+        {'label': '11:00 – 12:00', 'start': '11:00', 'end': '12:00', 'is_break': False},
+        {'label': '12:00 – 13:00', 'start': '12:00', 'end': '13:00', 'is_break': False},
+        {'label': '🍽️ Lunch — 13:00 to 14:00', 'is_break': True},
+        {'label': '14:00 – 15:00', 'start': '14:00', 'end': '15:00', 'is_break': False},
+        {'label': '15:00 – 16:00', 'start': '15:00', 'end': '16:00', 'is_break': False},
+    ]
+    DAYS = ['mon', 'tue', 'wed', 'thu', 'fri']
+
+    # Build timetable_data: {classroom_name: [period_rows]}
+    classrooms = ClassRoom.objects.all().order_by('name')
+    timetable_data = {}
+
+    for classroom in classrooms:
+        # Index slots by (day, start_time_str)
+        slot_index = {}
+        for s in slots.filter(classroom=classroom):
+            key = (s.day, s.start_time.strftime('%H:%M'))
+            slot_index[key] = s
+
+        week = []
+        for period in PERIODS:
+            if period['is_break']:
+                week.append({'is_break': True, 'label': period['label']})
+            else:
+                cells = []
+                for day in DAYS:
+                    slot = slot_index.get((day, period['start']))
+                    if slot:
+                        cells.append({
+                            'code': slot.subject.code,
+                            'name': slot.subject.name,
+                            'teacher': slot.teacher.get_full_name(),
+                            'color': COLORS.get(slot.subject.code, '#6c757d'),
+                        })
+                    else:
+                        cells.append(None)
+                week.append({'is_break': False, 'label': period['label'], 'cells': cells})
+
+        timetable_data[classroom.name] = week
+
+    return render(request, 'accounts/admin/timetable.html', {
+        'slots': slots,
+        'timetable_data': timetable_data,
+    })
 
 
 @login_required
@@ -960,3 +1072,200 @@ def admin_add_fee(request):
         messages.success(request, 'Fee record added.')
         return redirect('admin_fees')
     return render(request, 'accounts/admin/add_fee.html', {'students': students})
+
+
+# ── Search Autocomplete API ───────────────────────────────────────────────────
+
+@login_required
+@admin_required
+def search_suggestions(request):
+    """
+    Returns JSON suggestions for the admin search fields.
+    ?q=noel&type=students   → matches students by name or admission number
+    ?q=noel&type=staff      → matches staff by name or subject
+    ?q=noel&type=fees       → matches students linked to fee records
+    ?q=noel&type=parents    → matches parents by name or username
+    """
+    q = request.GET.get('q', '').strip()
+    search_type = request.GET.get('type', 'students')
+
+    if len(q) < 2:
+        return JsonResponse({'results': []})
+
+    results = []
+
+    if search_type == 'students':
+        profiles = UserProfile.objects.filter(
+            role='student'
+        ).filter(
+            Q(user__first_name__icontains=q) |
+            Q(user__last_name__icontains=q) |
+            Q(admission_number__icontains=q) |
+            Q(user__email__icontains=q)
+        ).select_related('user')[:8]
+
+        for p in profiles:
+            full_name = p.user.get_full_name() or p.user.username
+            results.append({
+                'label': f'{full_name} — {p.admission_number or "no admission no."}',
+                'value': full_name,
+            })
+
+    elif search_type == 'staff':
+        from core.models import Staff
+        staff_qs = Staff.objects.filter(
+            Q(name__icontains=q) |
+            Q(subject__icontains=q) |
+            Q(role__icontains=q)
+        )[:8]
+        for s in staff_qs:
+            results.append({
+                'label': f'{s.name} — {s.role}',
+                'value': s.name,
+            })
+
+    elif search_type == 'fees':
+        users = User.objects.filter(
+            userprofile__role='student'
+        ).filter(
+            Q(first_name__icontains=q) |
+            Q(last_name__icontains=q)
+        )[:8]
+        for u in users:
+            results.append({
+                'label': u.get_full_name() or u.username,
+                'value': u.get_full_name() or u.username,
+            })
+
+    elif search_type == 'parents':
+        profiles = UserProfile.objects.filter(
+            role='parent'
+        ).filter(
+            Q(user__first_name__icontains=q) |
+            Q(user__last_name__icontains=q) |
+            Q(user__username__icontains=q)
+        ).select_related('user')[:8]
+        for p in profiles:
+            full_name = p.user.get_full_name() or p.user.username
+            results.append({
+                'label': full_name,
+                'value': full_name,
+            })
+
+    return JsonResponse({'results': results})
+
+
+# ── Admin: Combinations ───────────────────────────────────────────────────────
+
+@login_required
+@admin_required
+def admin_combinations(request):
+    combinations = Combination.objects.all().order_by('code')
+    return render(request, 'accounts/admin/combinations.html', {'combinations': combinations})
+
+
+@login_required
+@admin_required
+def admin_add_combination(request):
+    if request.method == 'POST':
+        code = request.POST.get('code', '').strip().upper()
+        name = request.POST.get('name', '').strip()
+        subjects = request.POST.get('subjects', '').strip()
+
+        if not code or not name:
+            messages.error(request, 'Code and name are required.')
+            return render(request, 'accounts/admin/add_combination.html')
+
+        if Combination.objects.filter(code=code).exists():
+            messages.error(request, f'Combination code "{code}" already exists.')
+            return render(request, 'accounts/admin/add_combination.html')
+
+        Combination.objects.create(code=code, name=name, subjects=subjects)
+        messages.success(request, f'Combination {code} added successfully.')
+        return redirect('admin_combinations')
+
+    return render(request, 'accounts/admin/add_combination.html')
+
+
+@login_required
+@admin_required
+def admin_edit_combination(request, pk):
+    combination = get_object_or_404(Combination, pk=pk)
+
+    if request.method == 'POST':
+        code = request.POST.get('code', '').strip().upper()
+        name = request.POST.get('name', '').strip()
+        subjects = request.POST.get('subjects', '').strip()
+
+        if not code or not name:
+            messages.error(request, 'Code and name are required.')
+            return render(request, 'accounts/admin/edit_combination.html', {'combination': combination})
+
+        # Check uniqueness — exclude self
+        if Combination.objects.filter(code=code).exclude(pk=pk).exists():
+            messages.error(request, f'Combination code "{code}" is already used by another combination.')
+            return render(request, 'accounts/admin/edit_combination.html', {'combination': combination})
+
+        combination.code = code
+        combination.name = name
+        combination.subjects = subjects
+        combination.save()
+        messages.success(request, f'Combination {code} updated.')
+        return redirect('admin_combinations')
+
+    return render(request, 'accounts/admin/edit_combination.html', {'combination': combination})
+
+
+# ── Admin: Move Student to Another Class ─────────────────────────────────────
+
+@login_required
+@admin_required
+def admin_move_student(request, pk):
+    """
+    Move a student from their current class to a new one.
+    Used when student progresses from Form 5 → Form 6,
+    or transfers between combinations.
+    """
+    student_profile = get_object_or_404(UserProfile, pk=pk, role='student')
+    student_user = student_profile.user
+    current_enrollment = StudentEnrollment.objects.filter(student=student_user).first()
+    all_classes = ClassRoom.objects.all().order_by('name')
+
+    if request.method == 'POST':
+        new_class_id = request.POST.get('classroom', '')
+        if not new_class_id:
+            messages.error(request, 'Please select a class.')
+            return render(request, 'accounts/admin/move_student.html', {
+                'student': student_profile,
+                'current_enrollment': current_enrollment,
+                'classes': all_classes,
+            })
+
+        new_classroom = get_object_or_404(ClassRoom, pk=new_class_id)
+
+        # Already in this class?
+        if current_enrollment and current_enrollment.classroom.pk == new_classroom.pk:
+            messages.warning(request, f'{student_user.get_full_name()} is already in {new_classroom.name}.')
+            return redirect('admin_students')
+
+        # Remove from current class
+        if current_enrollment:
+            old_class_name = current_enrollment.classroom.name
+            current_enrollment.delete()
+        else:
+            old_class_name = 'none'
+
+        # Enroll in new class
+        StudentEnrollment.objects.create(student=student_user, classroom=new_classroom)
+
+        messages.success(
+            request,
+            f'{student_user.get_full_name()} moved from {old_class_name} → {new_classroom.name}.'
+        )
+        return redirect('admin_students')
+
+    return render(request, 'accounts/admin/move_student.html', {
+        'student': student_profile,
+        'current_enrollment': current_enrollment,
+        'classes': all_classes,
+    })

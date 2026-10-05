@@ -1,0 +1,68 @@
+{% extends 'accounts/admin_base.html' %}
+{% block title %}Move Student{% endblock %}
+{% block page_title %}Move Student to Another Class{% endblock %}
+
+{% block content %}
+<div class="card shadow-sm" style="max-width:600px;">
+    <div class="card-header bg-warning text-dark fw-bold">
+        <i class="fas fa-exchange-alt me-2"></i> Class Progression / Transfer
+    </div>
+    <div class="card-body">
+
+        <!-- Student info -->
+        <div class="alert alert-light border mb-4">
+            <div class="fw-bold fs-5">{{ student.user.get_full_name }}</div>
+            <div class="text-muted small">Admission: {{ student.admission_number|default:"—" }}</div>
+            <div class="mt-2">
+                <strong>Current class:</strong>
+                {% if current_enrollment %}
+                    <span class="badge bg-primary ms-1 py-2 px-3">
+                        {{ current_enrollment.classroom.name }} ({{ current_enrollment.classroom.year }})
+                    </span>
+                {% else %}
+                    <span class="text-danger ms-1">Not enrolled in any class</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="mb-4">
+                <label class="form-label fw-semibold">
+                    Move to class <span class="text-danger">*</span>
+                </label>
+                <select name="classroom" class="form-select" required>
+                    <option value="">— Select new class —</option>
+                    {% for cls in classes %}
+                    <option value="{{ cls.pk }}"
+                        {% if current_enrollment and current_enrollment.classroom.pk == cls.pk %}disabled{% endif %}>
+                        {{ cls.name }} — {{ cls.combination.code }} ({{ cls.year }})
+                        {% if current_enrollment and current_enrollment.classroom.pk == cls.pk %}
+                            (current)
+                        {% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+                <div class="form-text">
+                    The student will be removed from their current class and added to the selected one.
+                    Their marks and attendance history are preserved.
+                </div>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-warning text-dark fw-semibold">
+                    <i class="fas fa-exchange-alt me-1"></i> Move Student
+                </button>
+                <a href="{% url 'admin_students' %}" class="btn btn-outline-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="alert alert-info mt-3" style="max-width:600px;">
+    <i class="fas fa-info-circle me-2"></i>
+    <strong>Tip:</strong> To move Form 5 students to Form 6, first create a Form 6 class
+    under <a href="{% url 'admin_add_class' %}">Add Class</a>, then use this page to move each student.
+</div>
+{% endblock %}

@@ -11,17 +11,32 @@ def academics(request):
 def admissions(request):
     combinations = Combination.objects.all()
     if request.method == 'POST':
+        # Validate required fields before saving
+        required_fields = ['full_name', 'date_of_birth', 'gender',
+                           'previous_school', 'index_number', 'combination',
+                           'parent_name', 'parent_phone', 'address']
+        missing = [f for f in required_fields if not request.POST.get(f, '').strip()]
+        if missing:
+            messages.error(request, 'Please fill in all required fields.')
+            return render(request, 'academics/admissions.html', {'combinations': combinations})
+
+        # Validate combination_id is a real Combination (prevents object spoofing)
+        combination_id = request.POST.get('combination', '')
+        if not Combination.objects.filter(pk=combination_id).exists():
+            messages.error(request, 'Invalid combination selected.')
+            return render(request, 'academics/admissions.html', {'combinations': combinations})
+
         AdmissionApplication.objects.create(
-            full_name=request.POST['full_name'],
-            date_of_birth=request.POST['date_of_birth'],
-            gender=request.POST['gender'],
-            previous_school=request.POST['previous_school'],
-            index_number=request.POST['index_number'],
-            combination_choice_id=request.POST['combination'],
-            parent_name=request.POST['parent_name'],
-            parent_phone=request.POST['parent_phone'],
-            parent_email=request.POST.get('parent_email', ''),
-            address=request.POST['address'],
+            full_name=request.POST['full_name'].strip(),
+            date_of_birth=request.POST['date_of_birth'].strip(),
+            gender=request.POST['gender'].strip(),
+            previous_school=request.POST['previous_school'].strip(),
+            index_number=request.POST['index_number'].strip(),
+            combination_choice_id=combination_id,
+            parent_name=request.POST['parent_name'].strip(),
+            parent_phone=request.POST['parent_phone'].strip(),
+            parent_email=request.POST.get('parent_email', '').strip(),
+            address=request.POST['address'].strip(),
         )
         messages.success(request, 'Application submitted successfully! You will receive a GePG control number for payment.')
         return redirect('admissions')

@@ -223,6 +223,25 @@
         .empty-state i { font-size: 2.5rem; opacity: 0.15; margin-bottom: 10px; display: block; }
         .section-tabs .nav-link { font-size: 0.82rem; padding: 6px 14px; border-radius: 8px; color: #666; }
         .section-tabs .nav-link.active { background: var(--orange-light); color: var(--orange); font-weight: 600; }
+
+        /* ── Print styles ── */
+        @media print {
+            /* Hide everything except the printable timetable div */
+            body > * { display: none !important; }
+
+            #printable-timetable {
+                display: block !important;
+                position: fixed;
+                top: 0; left: 0;
+                width: 100%;
+                font-family: Arial, sans-serif;
+                color: #000;
+                background: #fff;
+            }
+
+            /* Force colour backgrounds to print */
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
     </style>
 </head>
 <body>
@@ -537,8 +556,11 @@
             <!-- ── Timetable ── -->
             {% if timetable %}
             <div class="card mb-4">
-                <div class="card-header">
-                    <i class="fas fa-calendar-week text-orange me-2"></i>Weekly Timetable
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-calendar-week text-orange me-2"></i>Weekly Timetable</span>
+                    <button onclick="printTimetable()" class="btn btn-sm btn-outline-secondary no-print">
+                        <i class="fas fa-download me-1"></i> Download PDF
+                    </button>
                 </div>
                 <div class="card-body" style="max-height:400px;overflow-y:auto;">
                     {% for day, slots in timetable.items %}
@@ -570,6 +592,74 @@
                     {% endfor %}
                 </div>
             </div>
+
+            <!-- Hidden printable timetable (shown only when printing) -->
+            <div id="printable-timetable" style="display:none;">
+                <div style="text-align:center; margin-bottom:20px; border-bottom:2px solid #333; padding-bottom:10px;">
+                    <h2 style="margin:0; font-size:18px;">KABUKU SECONDARY SCHOOL</h2>
+                    <h3 style="margin:4px 0; font-size:14px;">Weekly Class Timetable</h3>
+                    <p style="margin:4px 0; font-size:12px;">
+                        Student: <strong>{{ request.user.get_full_name }}</strong>
+                        &nbsp;|&nbsp; Class: <strong>{{ classroom.name|default:"—" }}</strong>
+                        &nbsp;|&nbsp; Year: <strong>{{ classroom.year|default:"—" }}</strong>
+                    </p>
+                    <p style="margin:0; font-size:11px; color:#666;">Printed on: <span id="print-date"></span></p>
+                </div>
+                <table style="width:100%; border-collapse:collapse; font-size:12px;">
+                    <thead>
+                        <tr style="background:#333; color:#fff;">
+                            <th style="border:1px solid #333; padding:8px; width:100px;">Time</th>
+                            <th style="border:1px solid #333; padding:8px;">Monday</th>
+                            <th style="border:1px solid #333; padding:8px;">Tuesday</th>
+                            <th style="border:1px solid #333; padding:8px;">Wednesday</th>
+                            <th style="border:1px solid #333; padding:8px;">Thursday</th>
+                            <th style="border:1px solid #333; padding:8px;">Friday</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for period in print_periods %}
+                        {% if period.is_break %}
+                        <tr>
+                            <td colspan="6" style="border:1px solid #ccc; padding:5px; text-align:center; background:#fff8dc; font-size:11px; color:#888;">
+                                {{ period.label }}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td style="border:1px solid #ccc; padding:6px; font-weight:bold; background:#f5f5f5; font-size:11px;">{{ period.label }}</td>
+                            {% for cell in period.cells %}
+                            <td style="border:1px solid #ccc; padding:6px; text-align:center;">
+                                {% if cell %}
+                                <div style="background:{{ cell.color }}; color:#fff; border-radius:4px; padding:4px 6px; font-size:11px;">
+                                    <strong>{{ cell.code }}</strong><br>
+                                    <span style="font-size:10px; opacity:0.9;">{{ cell.teacher }}</span>
+                                </div>
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <p style="margin-top:15px; font-size:11px; color:#888; text-align:center;">
+                    Kabuku Secondary School &mdash; Confidential &mdash; For Student Use Only
+                </p>
+            </div>
+
+            <script>
+            function printTimetable() {
+                document.getElementById('print-date').textContent = new Date().toLocaleDateString('en-GB', {
+                    weekday:'long', year:'numeric', month:'long', day:'numeric'
+                });
+                // Move printable div to body root so print CSS can target it directly
+                var el = document.getElementById('printable-timetable');
+                document.body.appendChild(el);
+                el.style.display = 'block';
+                window.print();
+                el.style.display = 'none';
+            }
+            </script>
             {% endif %}
 
             <!-- ── Notifications ── -->

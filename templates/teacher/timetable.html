@@ -1,34 +1,147 @@
 {% extends 'teacher/base.html' %}
 {% block title %}My Timetable{% endblock %}
-{% block page_title %}My Timetable{% endblock %}
+{% block page_title %}My Weekly Timetable{% endblock %}
 
 {% block content %}
-<div class="row g-3">
+
+<!-- Download button -->
+<div class="d-flex justify-content-end mb-3 no-print">
+    <button onclick="printTeacherTimetable()" class="btn btn-orange">
+        <i class="fas fa-download me-2"></i> Download PDF
+    </button>
+</div>
+
+<!-- Subject colour legend -->
+<div class="d-flex flex-wrap gap-2 mb-3 no-print">
     {% for day, slots in timetable.items %}
-    <div class="col-md-12">
-        <div class="card mb-2">
-            <div class="card-header fw-bold">
-                {% if day == 'mon' %}Monday{% elif day == 'tue' %}Tuesday{% elif day == 'wed' %}Wednesday{% elif day == 'thu' %}Thursday{% elif day == 'fri' %}Friday{% endif %}
-            </div>
-            <div class="card-body p-0">
-                {% if slots %}
-                <table class="table mb-0">
-                    <tbody>
-                        {% for slot in slots %}
-                        <tr>
-                            <td style="width:150px;" class="fw-bold">{{ slot.start_time|time:"H:i" }} - {{ slot.end_time|time:"H:i" }}</td>
-                            <td><span class="badge bg-warning text-dark me-2">{{ slot.subject.code }}</span>{{ slot.subject.name }}</td>
-                            <td>{{ slot.classroom.name }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <p class="text-muted text-center py-2 mb-0">No classes</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
+        {% for slot in slots %}
+            <span class="badge rounded-pill px-3 py-2"
+                  style="background:{% if slot.subject.code == 'PHY' %}#4361ee{% elif slot.subject.code == 'MAT' %}#f72585{% elif slot.subject.code == 'GEO' %}#0077b6{% elif slot.subject.code == 'CHE' %}#7209b7{% elif slot.subject.code == 'BIO' %}#06d6a0{% elif slot.subject.code == 'ENG' %}#fb8500{% else %}#adb5bd{% endif %};">
+                {{ slot.subject.code }} — {{ slot.subject.name }}
+            </span>
+        {% endfor %}
     {% endfor %}
 </div>
+
+<!-- Daily list view (screen only) -->
+<div class="row g-3 no-print">
+{% for day, slots in timetable.items %}
+<div class="col-md-6 col-lg-4">
+    <div class="card h-100 shadow-sm">
+        <div class="card-header fw-bold text-white"
+             style="background:{% if day == 'mon' %}#4361ee{% elif day == 'tue' %}#f72585{% elif day == 'wed' %}#7209b7{% elif day == 'thu' %}#06d6a0{% else %}#fb8500{% endif %};">
+            {% if day == 'mon' %}Monday{% elif day == 'tue' %}Tuesday{% elif day == 'wed' %}Wednesday{% elif day == 'thu' %}Thursday{% elif day == 'fri' %}Friday{% endif %}
+        </div>
+        <div class="card-body p-0">
+            {% if slots %}
+            <ul class="list-group list-group-flush">
+                {% for slot in slots %}
+                <li class="list-group-item d-flex align-items-center gap-2 py-2">
+                    <span class="badge text-white"
+                          style="min-width:42px;background:{% if slot.subject.code == 'PHY' %}#4361ee{% elif slot.subject.code == 'MAT' %}#f72585{% elif slot.subject.code == 'GEO' %}#0077b6{% elif slot.subject.code == 'CHE' %}#7209b7{% elif slot.subject.code == 'BIO' %}#06d6a0{% elif slot.subject.code == 'ENG' %}#fb8500{% else %}#adb5bd{% endif %};">
+                        {{ slot.subject.code }}
+                    </span>
+                    <div>
+                        <div class="fw-semibold small">{{ slot.subject.name }}</div>
+                        <div class="text-muted" style="font-size:.75rem;">
+                            {{ slot.start_time|time:"H:i" }} – {{ slot.end_time|time:"H:i" }}
+                            &nbsp;|&nbsp; {{ slot.classroom.name }}
+                        </div>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-muted text-center py-3 mb-0 small">No classes scheduled</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endfor %}
+</div>
+
+<!-- ── Printable Timetable (hidden on screen, shown only on print) ── -->
+<div id="teacher-print-timetable" style="display:none;">
+    <div style="text-align:center;border-bottom:2px solid #333;padding-bottom:12px;margin-bottom:16px;">
+        <h2 style="margin:0;font-size:18px;letter-spacing:1px;">KABUKU SECONDARY SCHOOL</h2>
+        <h3 style="margin:4px 0;font-size:13px;font-weight:normal;">Teacher Session Timetable</h3>
+        <table style="width:100%;font-size:12px;margin-top:8px;">
+            <tr>
+                <td><strong>Teacher:</strong> {{ request.user.get_full_name }}</td>
+                <td><strong>Subjects:</strong>
+                    {% for day, slots in timetable.items %}{% for s in slots %}{{ s.subject.code }} {% endfor %}{% endfor %}
+                </td>
+                <td><strong>Printed:</strong> <span id="teacher-print-date"></span></td>
+            </tr>
+        </table>
+    </div>
+
+    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+            <tr style="background:#222;color:#fff;">
+                <th style="border:1px solid #555;padding:8px;width:105px;">Time</th>
+                <th style="border:1px solid #555;padding:8px;">Monday</th>
+                <th style="border:1px solid #555;padding:8px;">Tuesday</th>
+                <th style="border:1px solid #555;padding:8px;">Wednesday</th>
+                <th style="border:1px solid #555;padding:8px;">Thursday</th>
+                <th style="border:1px solid #555;padding:8px;">Friday</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for period in print_periods %}
+            {% if period.is_break %}
+            <tr>
+                <td colspan="6" style="border:1px solid #ccc;padding:5px;text-align:center;background:#fffbe6;font-size:11px;color:#888;">
+                    {{ period.label }}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td style="border:1px solid #ccc;padding:6px;font-weight:bold;background:#f5f5f5;font-size:11px;">{{ period.label }}</td>
+                {% for cell in period.cells %}
+                <td style="border:1px solid #ccc;padding:5px;text-align:center;">
+                    {% if cell %}
+                    <div style="background:{{ cell.color }};color:#fff;border-radius:4px;padding:5px;font-size:11px;">
+                        <strong>{{ cell.code }}</strong><br>
+                        <span style="font-size:10px;opacity:0.85;">{{ cell.name }}</span>
+                    </div>
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+    <p style="margin-top:14px;font-size:11px;color:#999;text-align:center;">
+        Kabuku Secondary School &mdash; Teacher Copy &mdash; Confidential
+    </p>
+</div>
+
+<script>
+function printTeacherTimetable() {
+    document.getElementById('teacher-print-date').textContent =
+        new Date().toLocaleDateString('en-GB', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+    document.getElementById('teacher-print-timetable').style.display = 'block';
+    window.print();
+    document.getElementById('teacher-print-timetable').style.display = 'none';
+}
+</script>
+
+<style>
+@media print {
+    body > *, .sidebar, nav, .navbar, .no-print, footer { display: none !important; }
+    #teacher-print-timetable {
+        display: block !important;
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%;
+        font-family: Arial, sans-serif;
+        color: #000;
+        background: #fff;
+    }
+    * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+}
+</style>
+
 {% endblock %}
